@@ -56,6 +56,7 @@ numpy = "^1.24.1"
 seaborn = "^0.12.2"
 jupyterlab = "^3.5.2"
 scikit-learn = "^1.2.0"
+bmdal-reg = "^2.1.4"
 
 [tool.poetry.extras]
 test = [
