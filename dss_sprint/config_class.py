@@ -4,6 +4,7 @@ A simple decorator around dataclass that makes it easier to create config classe
 import dataclasses
 import functools
 
+__all__ = ['configclass']
 
 def __init_config_class(self, /, **kwargs):
     fields = dataclasses.fields(self)
