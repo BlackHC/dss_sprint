@@ -42,7 +42,9 @@ class Context:
 
 
 class ContextMergeCallback(typing.Protocol):
-    def __call__(self, context: Context, key: object, fields: typing.Mapping[str, Any]) -> Context:
+    def __call__(
+        self, context: Context, key: object, fields: typing.Mapping[str, Any]
+    ) -> Context:
         raise NotImplementedError()
 
 
@@ -51,11 +53,15 @@ class ContextManager:
     current_context: Optional[Context] = None
 
     @contextlib.contextmanager
-    def context(self, key: object, fields: typing.Mapping[str, Any]) -> typing.Iterator[Context]:
+    def context(
+        self, key: object, fields: typing.Mapping[str, Any]
+    ) -> typing.Iterator[Context]:
         """
         Create a new sub-context.
         """
-        chain = ChainMap(fields, self.current_context.fields if self.current_context else {})
+        chain = ChainMap(
+            fields, self.current_context.fields if self.current_context else {}
+        )
         new_context = Context(key=key, fields=chain, origins={})
 
         old_context = self.current_context
@@ -107,6 +113,7 @@ we have the method that creates the runtime binding.
 the runtime binding is a function that can evaluate whether its selector matches
 """
 
+
 class TargetProtocol(typing.Protocol):
     def apply(self, context: Context) -> None:
         raise NotImplementedError()
@@ -123,7 +130,7 @@ class AspectAnnotation:
     targets: list[object]
 
     @staticmethod
-    def try_get(cls_or_func) -> 'AspectAnnotation | None':
+    def try_get(cls_or_func) -> "AspectAnnotation | None":
         """
         Get the aspect annotation object for a class or function or None.
 
@@ -133,10 +140,10 @@ class AspectAnnotation:
         Returns:
             The aspect annotation object or None.
         """
-        return getattr(cls_or_func, '__aspect_annotation__', None)
+        return getattr(cls_or_func, "__aspect_annotation__", None)
 
     @staticmethod
-    def create_or_get(cls_or_func) -> 'AspectAnnotation':
+    def create_or_get(cls_or_func) -> "AspectAnnotation":
         """
         Add a target to the aspect annotation object for a class or function
         """
@@ -144,11 +151,11 @@ class AspectAnnotation:
         annotation = AspectAnnotation.try_get(cls_or_func)
         if annotation is None:
             # Check if cls_or_func is wrapped by a decorator and try on the wrapped object if so.
-            if hasattr(cls_or_func, '__wrapped__'):
+            if hasattr(cls_or_func, "__wrapped__"):
                 annotation = AspectAnnotation.try_get(cls_or_func.__wrapped__)
         if annotation is None:
             annotation = AspectAnnotation(targets=[])
-            setattr(cls_or_func, '__aspect_annotation__', annotation)
+            setattr(cls_or_func, "__aspect_annotation__", annotation)
         return annotation
 
 
@@ -160,18 +167,26 @@ def get_sub_context(cls_or_func):
     For a function, it is all its parameters with name and default.
     """
     if inspect.isclass(cls_or_func):
-        return {k: v for k, v in cls_or_func.__dict__.items() if not k.startswith('__')}
+        return {k: v for k, v in cls_or_func.__dict__.items() if not k.startswith("__")}
     elif inspect.isfunction(cls_or_func):
-        all_params = {k: v.default for k, v in inspect.signature(cls_or_func).parameters.items()}
+        all_params = {
+            k: v.default for k, v in inspect.signature(cls_or_func).parameters.items()
+        }
         # Warn for empty defaults.
-        empty_defaults = {k: v for k, v in all_params.items() if v is inspect.Parameter.empty}
+        empty_defaults = {
+            k: v for k, v in all_params.items() if v is inspect.Parameter.empty
+        }
         if empty_defaults:
-            warnings.warn(f'Empty defaults for parameters {empty_defaults} in function {cls_or_func}')
+            warnings.warn(
+                f"Empty defaults for parameters {empty_defaults} in function {cls_or_func}"
+            )
 
         # Filter out empty defaults.
         return {k: v for k, v in all_params.items() if v is not inspect.Parameter.empty}
     else:
-        raise ValueError(f'Expected class or function, got {cls_or_func} as sub-context!')
+        raise ValueError(
+            f"Expected class or function, got {cls_or_func} as sub-context!"
+        )
 
 
 def test_get_sub_context():
@@ -179,12 +194,12 @@ def test_get_sub_context():
         a = 1
         b = 2
 
-    assert get_sub_context(A) == {'a': 1, 'b': 2}
+    assert get_sub_context(A) == {"a": 1, "b": 2}
 
     def f(a=1, b=2):
         pass
 
-    assert get_sub_context(f) == {'a': 1, 'b': 2}
+    assert get_sub_context(f) == {"a": 1, "b": 2}
 
     # test that we warn for empty defaults.
     def g(a, b):
@@ -205,7 +220,9 @@ def patch_function(func, context_map):
 
     # Create a new signature with the updated defaults.
     new_signature = signature.replace(
-        parameters=[signature.parameters[k].replace(default=v) for k, v in all_params.items()]
+        parameters=[
+            signature.parameters[k].replace(default=v) for k, v in all_params.items()
+        ]
     )
     # We create a wrapper and apply the defaults to the args and kwargs
     # and then call the original function with the updated args and kwargs.
@@ -216,6 +233,7 @@ def patch_function(func, context_map):
         bound_args = new_signature.bind_partial(*args, **kwargs)
         bound_args.apply_defaults()
         return func(*bound_args.args, **bound_args.kwargs)
+
     # Set a special marker attribute to indicate that this function is patched.
     wrapper.__aspect_patched__ = True
 
@@ -239,7 +257,7 @@ def test_patch_function_function():
     assert f(3, 4) == (3, 4)
 
     # Patch the function.
-    f = patch_function(f, {'b': 5})
+    f = patch_function(f, {"b": 5})
     assert f() == (1, 5)
     assert f(3) == (3, 5)
     assert f(3, 4) == (3, 4)
@@ -252,18 +270,18 @@ def test_patch_function_function():
     assert f(3) == (3, 2)
     assert f(3, 4) == (3, 4)
 
-    assert not hasattr(f, '__aspect_patched__')
+    assert not hasattr(f, "__aspect_patched__")
 
 
 def test_patch_function_kwargs():
-    def f(x,/,a=1, b=2):
+    def f(x, /, a=1, b=2):
         return x, a, b
 
     assert f(0) == (0, 1, 2)
     assert f(0, 3) == (0, 3, 2)
 
     # Patch the function.
-    f = patch_function(f, {'b': 5})
+    f = patch_function(f, {"b": 5})
     assert f(0) == (0, 1, 5)
     assert f(0, 3) == (0, 3, 5)
 
@@ -274,10 +292,10 @@ def test_patch_function_kwargs():
     assert f(0) == (0, 1, 2)
     assert f(0, 3) == (0, 3, 2)
 
-    assert not hasattr(f, '__aspect_patched__')
+    assert not hasattr(f, "__aspect_patched__")
 
     # Now patch the positional argument.
-    f = patch_function(f, {'x': 0})
+    f = patch_function(f, {"x": 0})
     assert f() == (0, 1, 2)
     # TODO this is confusing as fuck.
     # We should remove positional arguments from the signature
@@ -291,10 +309,7 @@ def test_patch_function_kwargs():
     assert f(0) == (0, 1, 2)
     assert f(0, 3) == (0, 3, 2)
 
-    assert not hasattr(f, '__aspect_patched__')
-
-
-
+    assert not hasattr(f, "__aspect_patched__")
 
 
 def test_patch_function_class():
@@ -307,7 +322,7 @@ def test_patch_function_class():
     assert A().b == 2
 
     # Patch the class.
-    A.__init__ = patch_function(A.__init__, {'b': 5})
+    A.__init__ = patch_function(A.__init__, {"b": 5})
     assert A().a == 1
     assert A().b == 5
 
@@ -318,9 +333,7 @@ def test_patch_function_class():
     assert A().a == 1
     assert A().b == 2
 
-    assert not hasattr(A.__init__, '__aspect_patched__')
-
-
+    assert not hasattr(A.__init__, "__aspect_patched__")
 
 
 @dataclass
@@ -357,10 +370,8 @@ class SubContextTargetDecorator:
                 @functools.wraps(self.target)
                 def wrapped_func(*args, **kwargs):
                     return self.target(*args, **kwargs)
+
                 self.target = wrapped_func
-
-
-
 
     def __call__(self, cls_or_func):
         """Add a context target to the context."""
@@ -368,19 +379,19 @@ class SubContextTargetDecorator:
         annotation.targets.append(self)
 
 
-
 SubContextTarget = SubContextTargetDecorator
 
 
 @dataclass(frozen=True)
 class Selector:
-    parent: 'Selector | None'
+    parent: "Selector | None"
     target: object
 
     def check_parent(self, active_state: dict[object, bool]) -> bool:
         if self.parent is not None:
             return self.parent.check_active(active_state)
         return True
+
 
 @dataclass
 class Aspect:
@@ -391,6 +402,7 @@ class Aspect:
 
 class AspectContext:
     pass
+
 
 def use_configuration(config: object):
     """

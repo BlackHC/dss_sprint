@@ -24,6 +24,3 @@ class RegressorProtocol(typing.Protocol):
 class ClassifierProtocol(typing.Protocol):
     def predict(self, data: Data) -> typing.Any:
         ...
-
-
-

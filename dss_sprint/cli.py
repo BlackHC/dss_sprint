@@ -8,11 +8,10 @@ def help():
     print("=" * len("dss_sprint"))
     print("Data Subset Selection Sprint")
 
+
 def main():
-    fire.Fire({
-        "help": help
-    })
+    fire.Fire({"help": help})
 
 
 if __name__ == "__main__":
-    main() # pragma: no cover
+    main()  # pragma: no cover

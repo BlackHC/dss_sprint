@@ -31,6 +31,7 @@ class SklearnLikeEnsembleRegressorProtocol(SklearnLikeRegressorProtocol):
     """
     Estimator that allows drawing multiple samples using an ensemble method (either real or virtual).
     """
+
     n_ensemble_members_: int = ...
 
     def predict_all(self, X) -> ArrayLike:
@@ -50,6 +51,7 @@ class SklearnLikeClassifierProtocol(typing.Protocol):
     """
     Protocol for a sklearn classification estimator.
     """
+
     n_classes_: int = ...
 
     def fit(self, X: ArrayLike, y: ArrayLike) -> typing_extensions.Self:
@@ -81,6 +83,7 @@ class SklearnLikeEnsembleClassifierProtocol(SklearnLikeClassifierProtocol):
     """
     Estimator that allows drawing multiple samples using an ensemble method (either real or virtual).
     """
+
     n_ensemble_members_: int = ...
     n_classes_: int = ...
 

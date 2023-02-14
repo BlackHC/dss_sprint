@@ -4,14 +4,15 @@ A simple decorator around dataclass that makes it easier to create config classe
 import dataclasses
 import functools
 
-__all__ = ['configclass']
+__all__ = ["configclass"]
+
 
 def __init_config_class(self, /, **kwargs):
     fields = dataclasses.fields(self)
     # Check kwargs only contains fields
     for key in kwargs:
         if key not in [field.name for field in fields]:
-            raise ValueError(f'Unknown field {key} for {self.__class__}')
+            raise ValueError(f"Unknown field {key} for {self.__class__}")
 
     for field in fields:
         if field.name not in kwargs:
@@ -29,12 +30,16 @@ def __init_config_class(self, /, **kwargs):
                         # Use the default value.
                         kwargs[field.name] = class_default.default
                     else:
-                        raise ValueError(f'Field {field.name} does not have a default value for {self.__class__}')
+                        raise ValueError(
+                            f"Field {field.name} does not have a default value for {self.__class__}"
+                        )
                 else:
                     # Use the class attribute.
                     kwargs[field.name] = class_default
             else:
-                raise ValueError(f'Field {field.name} for {self.__class__} has no default value')
+                raise ValueError(
+                    f"Field {field.name} for {self.__class__} has no default value"
+                )
 
     self.__dict__.update(kwargs)
 
@@ -64,7 +69,9 @@ def __keys_config_class(self):
 
 
 def __items_config_class(self):
-    return [(field.name, getattr(self, field.name)) for field in dataclasses.fields(self)]
+    return [
+        (field.name, getattr(self, field.name)) for field in dataclasses.fields(self)
+    ]
 
 
 def __values_config_class(self):
@@ -78,7 +85,9 @@ def __or_config_class(self, other):
     # Check that all fields in other are in self.
     missing_fields = set(other_dict.keys()) - set(self.keys())
     if missing_fields:
-        raise ValueError(f'Cannot merge {other} into {self} because {type(other)} contains fields that are not in {type(self)}: {missing_fields}')
+        raise ValueError(
+            f"Cannot merge {other} into {self} because {type(other)} contains fields that are not in {type(self)}: {missing_fields}"
+        )
 
     merged_fields = {**self, **other}
     return self.__class__(**merged_fields)
@@ -88,27 +97,27 @@ def __or_config_class(self, other):
 @functools.wraps(dataclasses.dataclass)
 def configclass(cls, /, **kwargs):
     # Assert that there is no init keyword argument.
-    if 'init' in kwargs:
-        raise ValueError('Cannot specify init keyword argument for configclass')
+    if "init" in kwargs:
+        raise ValueError("Cannot specify init keyword argument for configclass")
     # Assert no eq keyword argument.
-    if 'eq' in kwargs:
-        raise ValueError('Cannot specify eq keyword argument for configclass')
+    if "eq" in kwargs:
+        raise ValueError("Cannot specify eq keyword argument for configclass")
     # Assert that there is no __init__ method.
     custom_methods = {
-        '__init__': __init_config_class,
-        '__iter__': __iter_config_class,
-        '__getitem__': __getitem_config_class,
-        '__len__': __len_config_class,
-        '__contains__': __contains_config_class,
-        'keys': __keys_config_class,
-        'items': __items_config_class,
-        'values': __values_config_class,
-        '__or__': __or_config_class,
+        "__init__": __init_config_class,
+        "__iter__": __iter_config_class,
+        "__getitem__": __getitem_config_class,
+        "__len__": __len_config_class,
+        "__contains__": __contains_config_class,
+        "keys": __keys_config_class,
+        "items": __items_config_class,
+        "values": __values_config_class,
+        "__or__": __or_config_class,
     }
     # Check if the class has any of the custom methods.
     for method_name, method in custom_methods.items():
         if method_name in cls.__dict__:
-            raise ValueError(f'Cannot specify {method_name} method for configclass')
+            raise ValueError(f"Cannot specify {method_name} method for configclass")
     # Set the custom methods.
     for method_name, method in custom_methods.items():
         setattr(cls, method_name, method)
@@ -149,15 +158,15 @@ default all fields are keyword-only. If slots is true, an
 __slots__ attribute is added.
 """
 
+
 # Test the configclass decorator.
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Create a config class.
     @configclass
     class Config:
         a: int
         b: int
         c: int = 3
-
 
     # Create an instance of the config class.
     config = Config(a=1, b=2)
