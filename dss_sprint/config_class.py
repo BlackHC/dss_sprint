@@ -78,7 +78,7 @@ def __values_config_class(self):
     return [getattr(self, field.name) for field in dataclasses.fields(self)]
 
 
-# Add | operator to allow for merging config classes.
+# Add | operator to allow for merging config classes (strict).
 def __or_config_class(self, other):
     # Verify that self can contain all fields from other.
     other_dict = {**other}
@@ -128,8 +128,8 @@ def configclass(cls, /, **kwargs):
 configclass.__doc__ = """Returns the same class as was passed in, with dunder methods
 added based on the fields defined in the class. This is a wrapper around dataclass.
 
-It uses the class variables to set the default values for the fields.
-So changing the class variables will change the default values for the fields.
+It uses the class variables to set the default values for the fields---so changing
+class variables will change the (future) default values for the fields.
 
 It supports fields with default values, fields with default factories, and fields
 with no default value.
