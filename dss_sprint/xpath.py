@@ -74,6 +74,15 @@ class Xpaths:
         finally:
             self._current.set(current)
 
+    def get_current_path(self):
+        """
+        Get the current path.
+
+        Returns:
+            The current path.
+        """
+        return self._current.get().full_name
+
     def get_metric_name(self, metric_name):
         """
         Get the full metric name.
@@ -95,10 +104,13 @@ _Xpaths = Xpaths()
 node = _Xpaths.sub_context
 
 # Alias for getting the full metric name.
-get_metric_name = _Xpaths.get_metric_name
+metric_name = _Xpaths.get_metric_name
+
+# Alias for getting the current path.
+current_path = _Xpaths.get_current_path
 
 # Limit exports
-__all__ = ["node", "get_metric_name", "Xpaths"]
+__all__ = ["node", "metric_name", "current_path", "Xpaths"]
 
 
 

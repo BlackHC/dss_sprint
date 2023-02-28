@@ -10,11 +10,11 @@ xpath.Xpaths.path_separator = "."
 def test_xpath():
     with xpath.node("outer"):
         with xpath.node("inner"):
-            assert xpath.get_metric_name("metric") == "outer.inner.metric"
+            assert xpath.metric_name("metric") == "outer.inner.metric"
         with xpath.node("inner2"):
-            assert xpath.get_metric_name("metric") == "outer.inner2.metric"
+            assert xpath.metric_name("metric") == "outer.inner2.metric"
 
-    assert xpath.get_metric_name("metric") == "metric"
+    assert xpath.metric_name("metric") == "metric"
 
     # Check all metrics and paths
     assert xpath._Xpaths.all_metrics == {"metric", "outer.inner.metric", "outer.inner2.metric"}
@@ -23,9 +23,9 @@ def test_xpath():
 
 def test_xpath_array():
     with xpath.node("inner", as_array=True):
-        assert xpath.get_metric_name("metric") == "inner[0].metric"
+        assert xpath.metric_name("metric") == "inner[0].metric"
     with xpath.node("inner", as_array=True):
-        assert xpath.get_metric_name("metric") == "inner[1].metric"
+        assert xpath.metric_name("metric") == "inner[1].metric"
 
 
 def test_xpath_missing_array():
@@ -38,3 +38,15 @@ def test_xpath_missing_array():
 
     # Check all metrics and paths
     assert xpath._Xpaths.all_paths == {"", "inner", "inner+1"}
+
+
+def test_xpath_get_current_path():
+    with xpath.node("outer"):
+        assert xpath.current_path() == "outer"
+        with xpath.node("inner"):
+            assert xpath.current_path() == "outer.inner"
+        assert xpath.current_path() == "outer"
+    assert xpath.current_path() == ""
+
+    # Check all metrics and paths
+    assert xpath._Xpaths.all_paths == {"", "outer", "outer.inner"}
