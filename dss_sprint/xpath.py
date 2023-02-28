@@ -44,7 +44,7 @@ class XpathNode:
             return f"{self.full_name}{path_separator}{metric_name}"
 
 
-class Xpaths:
+class Xpath:
     """
     Execution Paths Manager.
 
@@ -52,12 +52,13 @@ class Xpaths:
     """
     path_separator = "/"
     _ROOT: XpathNode = XpathNode("")
-    _current: ContextVar[XpathNode] = ContextVar("current", default=_ROOT)
+    _current: ContextVar[XpathNode] = ContextVar("current_xpath_node", default=_ROOT)
     all_paths = {""}
     all_metrics = set()
 
+    @classmethod
     @contextmanager
-    def sub_context(self, sub_name, as_array: bool = False):
+    def node(cls, sub_name, as_array: bool = False):
         """
         Create a new sub-path.
 
@@ -65,25 +66,28 @@ class Xpaths:
             sub_name: The name of the sub-path.
             as_array: If True, the sub-path will be treated as an array and the index will be appended to the name.
         """
-        current = self._current.get()
-        child = current.create_child(sub_name, as_array=as_array, path_separator=self.path_separator)
-        self.all_paths |= {child.full_name}
-        self._current.set(child)
+        current = cls._current.get()
+        child = current.create_child(sub_name, as_array=as_array, path_separator=cls.path_separator)
+        cls.all_paths |= {child.full_name}
+        token = cls._current.set(child)
         try:
             yield child
         finally:
-            self._current.set(current)
+            cls._current.reset(token)
 
-    def get_current_path(self):
+    @classmethod
+    @property
+    def current_path(cls):
         """
         Get the current path.
 
         Returns:
             The current path.
         """
-        return self._current.get().full_name
+        return cls._current.get().full_name
 
-    def get_metric_name(self, metric_name):
+    @classmethod
+    def metric_name(cls, metric_name):
         """
         Get the full metric name.
 
@@ -93,24 +97,22 @@ class Xpaths:
         Returns:
             The full metric name.
         """
-        metric_name = self._current.get().get_metric_name(metric_name, path_separator=self.path_separator)
-        self.all_metrics |= {metric_name}
+        metric_name = cls._current.get().get_metric_name(metric_name, path_separator=cls.path_separator)
+        cls.all_metrics |= {metric_name}
         return metric_name
 
+    @classmethod
+    def test_reset(cls):
+        cls._current.set(cls._ROOT)
+        cls._ROOT.used_sub_names.clear()
+        cls.all_paths = {""}
+        cls.all_metrics = set()
 
-_Xpaths = Xpaths()
 
-# Alias for creating a new sub-path.
-node = _Xpaths.sub_context
-
-# Alias for getting the full metric name.
-metric_name = _Xpaths.get_metric_name
-
-# Alias for getting the current path.
-current_path = _Xpaths.get_current_path
+xpath = Xpath
 
 # Limit exports
-__all__ = ["node", "metric_name", "current_path", "Xpaths"]
+__all__ = ["xpath"]
 
 
 
