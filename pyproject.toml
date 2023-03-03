@@ -57,6 +57,7 @@ seaborn = "^0.12.2"
 jupyterlab = "^3.5.2"
 scikit-learn = "^1.2.0"
 bmdal-reg = "^2.1.4"
+skorch = "^0.12.1"
 
 [tool.poetry.extras]
 test = [
