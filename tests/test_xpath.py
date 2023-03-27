@@ -4,7 +4,7 @@ import pytest
 
 from dss_sprint.utils.xpath import xpath
 
-xpath.path_separator = "../../../tests"
+xpath.path_separator = "."
 
 
 def test_xpath():
@@ -19,7 +19,7 @@ def test_xpath():
 
     # Check all metrics and paths
     assert xpath.all_metrics == {"metric", "outer.inner.metric", "outer.inner2.metric"}
-    assert xpath.all_step_names == {"", "outer", "outer.inner", "outer.inner2"}
+    assert xpath.all_step_names == {"outer", "outer.inner", "outer.inner2"}
 
 
 def test_xpath_array():
@@ -111,6 +111,7 @@ def test_xpath_all_paths_stats():
 
 
 def test_xpath_summary_step():
+    xpath.test_reset()
     with xpath.step("outer", is_summary_step=True):
         with xpath.step("inner"):
             assert xpath.current_step_name == "outer.inner"

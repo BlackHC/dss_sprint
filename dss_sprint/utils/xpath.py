@@ -104,7 +104,7 @@ class Xpath:
     A simple class to make it easy to create nested paths for logging and debugging.
     """
     path_separator = "/"
-    _ROOT: XpathStep = XpathStep("", "")
+    _ROOT: XpathStep = XpathStep("", 0, "")
     _current: ContextVar[XpathStep] = ContextVar("current_xpath_node", default=_ROOT)
     all_summary_step_names = set()
     all_step_names = set()
