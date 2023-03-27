@@ -1,5 +1,4 @@
-# eXecution path
-# This makes it easy to create nested paths for logging and debugging
+# eXecution path makes it easy to create nested paths for logging and debugging.
 import dataclasses
 import warnings
 from collections import defaultdict
@@ -14,26 +13,29 @@ from blackhc.project.utils.context_stopwatch import ContextStopwatch
 @dataclass
 class XpathStep:
     step_name: str
+    step_index: int
     unique_path: str
     is_summary_step: bool = False
     parent: "XpathStep" = None
-    used_names: {str, int} = dataclasses.field(default_factory=lambda: defaultdict(int))
+    used_names: dict[str, int] = dataclasses.field(default_factory=lambda: defaultdict(int))
 
     def create_child(self, name, *, path_separator: str, is_summary_step: bool=False) -> "XpathStep":
         is_summary_step |= self.is_summary_step
+
+        step_index = self.used_names[name]
 
         # Built a unique name that is fully indexed.
         if is_summary_step:
             unique_name = name
 
             if self.used_names[name] >= 1:
-                unique_name = f"{name}+{self.used_names[name]}"
+                unique_name = f"{name}+{step_index}"
 
-                if self.used_names[name] == 1:
+                if step_index == 1:
                     # Log a warning that the name has been used before.
                     warnings.warn(f"Sub name {name} has already been used in summary step. Use a unique name please!")
         else:
-            unique_name = f"{name}[{self.used_names[name]}]"
+            unique_name = f"{name}[{step_index}]"
 
         # Increment the number of times the sub_name has been used.
         self.used_names[name] += 1
@@ -48,7 +50,7 @@ class XpathStep:
         if is_summary_step:
             step_name = unique_path
 
-        return XpathStep(step_name, unique_path, is_summary_step, self)
+        return XpathStep(step_name, step_index, unique_path, is_summary_step, self)
 
     def metric_name(self, metric_name, *, path_separator: str, is_summary:bool=False):
         if self.parent is None:
@@ -119,8 +121,7 @@ class Xpath:
         Args:
             name: The name of the step.
             is_summary_step: If True, the step will be treated as a summary step.
-                This means that the name will not be indexed and will be used as is (if possible).
-
+                This means that a unique name will be generated for the step.
         """
         current = cls._current.get()
         child = current.create_child(name, path_separator=cls.path_separator, is_summary_step=is_summary_step)
@@ -146,6 +147,28 @@ class Xpath:
             The current path.
         """
         return cls._current.get().step_name
+
+    @classmethod
+    @property
+    def current_step_index(cls):
+        """
+        Get the current step index.
+
+        Returns:
+            The current step index.
+        """
+        return cls._current.get().step_index
+
+    @classmethod
+    @property
+    def current_step_count(cls):
+        """
+        Get the current step count.
+
+        Returns:
+            The current step count.
+        """
+        return cls.all_step_stats[cls.current_step_name].count
 
     @classmethod
     @property

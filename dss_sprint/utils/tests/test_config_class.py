@@ -1,7 +1,7 @@
 # Tests for config_class.
 import pytest
 
-from dss_sprint.config_class import configclass
+from dss_sprint.utils.config_class import configclass
 
 
 @configclass

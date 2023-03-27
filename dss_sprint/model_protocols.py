@@ -5,8 +5,6 @@ import typing
 
 import numpy as np
 
-from dss_sprint.component import Component
-
 # TODO
 Data: typing.TypeAlias = tuple[np.typing.ArrayLike, np.typing.ArrayLike] | np.ndarray
 

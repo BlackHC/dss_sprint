@@ -2,9 +2,9 @@
 
 import pytest
 
-from dss_sprint.xpath import xpath
+from dss_sprint.utils.xpath import xpath
 
-xpath.path_separator = "."
+xpath.path_separator = "../../../tests"
 
 
 def test_xpath():

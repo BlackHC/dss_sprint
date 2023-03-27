@@ -1,7 +1,7 @@
 """
 Component tests.
 """
-from dss_sprint.component import *
+from dss_sprint.utils.component import *
 
 
 class InterfaceA(Interface):
