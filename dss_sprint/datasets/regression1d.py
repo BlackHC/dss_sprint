@@ -5,13 +5,14 @@ from dataclasses import dataclass
 
 import numpy as np
 import torch.utils.data
-from sklearn.datasets import make_friedman1, make_friedman2, make_friedman3
+from sklearn.datasets import make_friedman1
 
 from dss_sprint.utils.component import Interface
 
 
 def example_f(x):
     return np.exp(0.5 * x - 0.5) + np.sin(1.5 * x)
+
 
 class RegressionDataset(Interface):
     def get_XY(self) -> tuple[np.ndarray, np.ndarray]:

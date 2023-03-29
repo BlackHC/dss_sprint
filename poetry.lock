@@ -813,6 +813,18 @@ files = [
 ]
 
 [[package]]
+name = "einops"
+version = "0.6.0"
+description = "A new flavour of deep learning operations"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "einops-0.6.0-py3-none-any.whl", hash = "sha256:c7b187a5dc725f079860ec2d330c1820448948622d826273345a8dd8d5f695bd"},
+    {file = "einops-0.6.0.tar.gz", hash = "sha256:6f6c78739316a2e3ccbce8052310497e69da092935e4173f2e76ec4e3a336a35"},
+]
+
+[[package]]
 name = "entrypoints"
 version = "0.4"
 description = "Discover and load entry points from installed packages."
@@ -3775,6 +3787,22 @@ testing = ["build[virtualenv]", "filelock (>=3.4.0)", "flake8 (<5)", "flake8-202
 testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "pytest", "pytest-enabler", "pytest-xdist", "tomli", "virtualenv (>=13.0.0)", "wheel"]
 
 [[package]]
+name = "siren-pytorch"
+version = "0.1.6"
+description = "Implicit Neural Representations with Periodic Activation Functions"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "siren-pytorch-0.1.6.tar.gz", hash = "sha256:71dd627fbee7ce9f7fffef2eaeedf8b2d7382991d660006588df9809c52e2fb3"},
+    {file = "siren_pytorch-0.1.6-py3-none-any.whl", hash = "sha256:4326cb73c18a980d5020c7988f01f9713750d78da559ccada7fd93595f8dc09c"},
+]
+
+[package.dependencies]
+einops = "*"
+torch = "*"
+
+[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -4394,4 +4422,4 @@ test = ["black", "flake8", "flake8-docstrings", "isort", "pytest", "pytest-cov"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "6529cc1da7625f95341d194bfb3322dfc30f3b395a9c15e566ec97bccb640512"
+content-hash = "1159da113632c8ec5dc89274c85884b120caf92fe2f21631eed37468b4a7a978"

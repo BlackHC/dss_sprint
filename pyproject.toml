@@ -59,6 +59,7 @@ scikit-learn = "^1.2.0"
 bmdal-reg = "^2.1.4"
 skorch = "^0.12.1"
 wandb = "^0.14.0"
+siren-pytorch = "^0.1.6"
 
 [tool.poetry.extras]
 test = [
