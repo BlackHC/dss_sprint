@@ -57,7 +57,7 @@ net = NeuralNetRegressor(
     #callbacks=[LRScheduler(policy=StepLR, step_size=10, gamma=0.1)],
     #train_split=predefined_split(torch.utils.data.TensorDataset(torch.from_numpy(X_test), torch.from_numpy(y_test))),
     verbose=1,
-    device="cuda",
+    device="mps",
 )
 
 # Train the neural network
