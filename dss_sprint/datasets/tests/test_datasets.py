@@ -1,7 +1,7 @@
+import numpy as np
 import torch
 
-from dss_sprint import datasets
-import numpy as np
+import dss_sprint.datasets.regression1d as datasets
 
 
 def test_higdon():
