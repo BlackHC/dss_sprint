@@ -2,7 +2,7 @@
 
 import pytest
 
-from dss_sprint.utils.xpath import xpath
+from dss_sprint.utils.log_path import xpath
 
 xpath.path_separator = "."
 

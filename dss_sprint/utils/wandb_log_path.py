@@ -2,7 +2,7 @@ import functools
 from contextlib import contextmanager
 
 import wandb
-from dss_sprint.utils.xpath import xpath
+from dss_sprint.utils.log_path import xpath
 
 
 @contextmanager

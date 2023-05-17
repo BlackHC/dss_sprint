@@ -1,25 +1,30 @@
-# eXecution path makes it easy to create nested paths for logging and debugging.
+"""
+Logging execution paths to make it easy to create nested paths for logging and debugging.
+"""
 import dataclasses
 import warnings
 from collections import defaultdict
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
-from enum import Enum
 
 from blackhc.project.utils.context_stopwatch import ContextStopwatch
 
 
 @dataclass
-class XpathStep:
+class LogPathStep:
     step_name: str
     step_index: int
     unique_path: str
     is_summary_step: bool = False
-    parent: "XpathStep" = None
-    used_names: dict[str, int] = dataclasses.field(default_factory=lambda: defaultdict(int))
+    parent: "LogPathStep" = None
+    used_names: dict[str, int] = dataclasses.field(
+        default_factory=lambda: defaultdict(int)
+    )
 
-    def create_child(self, name, *, path_separator: str, is_summary_step: bool=False) -> "XpathStep":
+    def create_child(
+        self, name, *, path_separator: str, is_summary_step: bool = False
+    ) -> "LogPathStep":
         is_summary_step |= self.is_summary_step
 
         step_index = self.used_names[name]
@@ -33,7 +38,9 @@ class XpathStep:
 
                 if step_index == 1:
                     # Log a warning that the name has been used before.
-                    warnings.warn(f"Sub name {name} has already been used in summary step. Use a unique name please!")
+                    warnings.warn(
+                        f"Sub name {name} has already been used in summary step. Use a unique name please!"
+                    )
         else:
             unique_name = f"{name}[{step_index}]"
 
@@ -50,9 +57,11 @@ class XpathStep:
         if is_summary_step:
             step_name = unique_path
 
-        return XpathStep(step_name, step_index, unique_path, is_summary_step, self)
+        return LogPathStep(step_name, step_index, unique_path, is_summary_step, self)
 
-    def metric_name(self, metric_name, *, path_separator: str, is_summary:bool=False):
+    def metric_name(
+        self, metric_name, *, path_separator: str, is_summary: bool = False
+    ):
         if self.parent is None:
             return metric_name
         else:
@@ -63,7 +72,7 @@ class XpathStep:
 
 
 @dataclass
-class XpathNodeStats:
+class LogPathNodeStats:
     count: int = 0
     first_time: float = float("nan")
     rest_time: float = float("nan")
@@ -91,30 +100,31 @@ class XpathNodeStats:
             self.first_time = time
         else:
             if self.count == 1:
-                self.rest_time = 0.
+                self.rest_time = 0.0
             self.rest_time += time
 
         self.count += 1
 
 
-class Xpath:
+class LogPath:
     """
-    Execution Paths Manager.
+    Log Execution Paths Manager.
 
     A simple class to make it easy to create nested paths for logging and debugging.
     """
+
     path_separator = "/"
-    _ROOT: XpathStep = XpathStep("", 0, "")
-    _current: ContextVar[XpathStep] = ContextVar("current_xpath_node", default=_ROOT)
+    _ROOT: LogPathStep = LogPathStep("", 0, "")
+    _current: ContextVar[LogPathStep] = ContextVar("current_xpath_node", default=_ROOT)
     all_summary_step_names = set()
     all_step_names = set()
     all_metrics = set()
     all_summary_metrics = set()
-    all_step_stats = defaultdict(XpathNodeStats)
+    all_step_stats = defaultdict(LogPathNodeStats)
 
     @classmethod
     @contextmanager
-    def step(cls, name, is_summary_step: bool=False):
+    def step(cls, name, is_summary_step: bool = False):
         """
         Create a new sub-path.
 
@@ -124,7 +134,9 @@ class Xpath:
                 This means that a unique name will be generated for the step.
         """
         current = cls._current.get()
-        child = current.create_child(name, path_separator=cls.path_separator, is_summary_step=is_summary_step)
+        child = current.create_child(
+            name, path_separator=cls.path_separator, is_summary_step=is_summary_step
+        )
         if child.is_summary_step:
             cls.all_summary_step_names |= {child.step_name}
         else:
@@ -181,9 +193,8 @@ class Xpath:
         """
         return cls._current.get().unique_path
 
-
     @classmethod
-    def metric_name(cls, metric_name, is_summary:bool=False):
+    def metric_name(cls, metric_name, is_summary: bool = False):
         """
         Get the full metric name.
 
@@ -193,8 +204,9 @@ class Xpath:
         Returns:
             The full metric name.
         """
-        metric_name = cls._current.get().metric_name(metric_name, path_separator=cls.path_separator,
-                                                     is_summary=is_summary)
+        metric_name = cls._current.get().metric_name(
+            metric_name, path_separator=cls.path_separator, is_summary=is_summary
+        )
         if is_summary:
             cls.all_summary_metrics |= {metric_name}
         else:
@@ -212,10 +224,7 @@ class Xpath:
         cls.all_summary_metrics = set()
 
 
-xpath = Xpath
+xpath = LogPath
 
 # Limit exports
 __all__ = ["xpath"]
-
-
-

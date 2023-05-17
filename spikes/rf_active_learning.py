@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.datasets import make_classification
 
-from dss_sprint.utils.wandb_xpath import log_metric, wandb_custom_step
+from dss_sprint.utils.wandb_log_path import log_metric, wandb_custom_step
 
 X, y = make_classification(
     n_samples=1000,
