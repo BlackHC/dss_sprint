@@ -117,6 +117,4 @@ profile = "black"
 # https://pytest-cov.readthedocs.io/en/latest/config.html
 # If you want to see console output from tests, include -s flag
 addopts = [
-    # !! do not include --cov option here because it might destroy PyCharm debug feature !!
-    '--junitxml=report.xml'
 ]
