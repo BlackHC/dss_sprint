@@ -162,7 +162,7 @@ class Mean(torch.nn.Module):
 
 class FunctionalModule(torch.nn.Module):
     """
-    A torch.nn.Module that a function, params and buffer from functorch in a nn.Module.
+    A torch.nn.Module that wraps a function, params and buffer from functorch in a nn.Module.
     """
 
     func: callable

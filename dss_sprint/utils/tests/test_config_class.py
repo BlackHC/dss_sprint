@@ -62,9 +62,3 @@ def test_config_class_merge_via_or():
     assert config4.a == 3
     assert config4.b == "4"
     assert config4.c == 5.0
-
-
-
-
-
-

@@ -7,6 +7,15 @@ from dss_sprint.utils.xpath import xpath
 xpath.path_separator = "."
 
 
+def test_xpath_no_step():
+    xpath.test_reset()
+    assert xpath.metric_name("metric") == "metric"
+
+    # Check all metrics and paths
+    assert xpath.all_metrics == {"metric"}
+    assert xpath.all_step_names == set()
+
+
 def test_xpath():
     xpath.test_reset()
     with xpath.step("outer"):
@@ -82,11 +91,22 @@ def test_xpath_all_paths_stats():
     assert xpath.all_step_stats["outer.inner"].count == 1
     assert xpath.all_step_stats["outer"].count == 1
 
-    assert xpath.all_step_stats["outer.inner.inner2.inner3"].mean_time == xpath.all_step_stats[
-        "outer.inner.inner2.inner3"].total_time
-    assert xpath.all_step_stats["outer.inner.inner2"].mean_time == xpath.all_step_stats["outer.inner.inner2"].total_time
-    assert xpath.all_step_stats["outer.inner"].mean_time == xpath.all_step_stats["outer.inner"].total_time
-    assert xpath.all_step_stats["outer"].mean_time == xpath.all_step_stats["outer"].total_time
+    assert (
+        xpath.all_step_stats["outer.inner.inner2.inner3"].mean_time
+        == xpath.all_step_stats["outer.inner.inner2.inner3"].total_time
+    )
+    assert (
+        xpath.all_step_stats["outer.inner.inner2"].mean_time
+        == xpath.all_step_stats["outer.inner.inner2"].total_time
+    )
+    assert (
+        xpath.all_step_stats["outer.inner"].mean_time
+        == xpath.all_step_stats["outer.inner"].total_time
+    )
+    assert (
+        xpath.all_step_stats["outer"].mean_time
+        == xpath.all_step_stats["outer"].total_time
+    )
 
     with xpath.step("outer"):
         with xpath.step("inner"):
