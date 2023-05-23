@@ -6,11 +6,11 @@ copula to generate synthetic data that is similar to the empirical data.
 """
 from dataclasses import dataclass
 
-import scipy
-import numpy as np
-import sklearn.datasets
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy
 import seaborn as sns
+import sklearn.datasets
 
 # %%
 
@@ -23,6 +23,7 @@ def make_independent_dataset(n_samples=1000):
     y = np.sin(2 * np.pi * y)
     return np.stack([x, y], axis=1)
 
+
 # %%
 # Create 2D dataset that has a correlated structure that is not linear
 # (i.e. not a Gaussian copula)
@@ -33,6 +34,7 @@ def make_dataset(n_samples=1000):
     y = np.sin(2 * np.pi * y)
     x = x * y
     return np.stack([x, y], axis=1)
+
 
 dataset = make_dataset(10000)
 
@@ -46,7 +48,7 @@ plt.show()
 
 # Show a contour plot and also plot the marginal distributions
 
-sns.jointplot(x=dataset[:,0],y=dataset[:,1], kind='kde')
+sns.jointplot(x=dataset[:, 0], y=dataset[:, 1], kind="kde")
 
 # Annotate the contour lines with the probability mass
 # (i.e. the integral of the density function):
@@ -57,13 +59,14 @@ plt.show()
 
 # Show a contour plot of the dataset
 
-_, cs = sns.kdeplot(x=dataset[:,0],y=dataset[:,1], shade=True)
+_, cs = sns.kdeplot(x=dataset[:, 0], y=dataset[:, 1], shade=True)
 
 plt.clabel(cs, inline=1, fontsize=10)
 
 plt.show()
 
 # %%
+
 
 @dataclass
 class NumpyEmpiricalUnivariateDistribution:
@@ -75,7 +78,7 @@ class NumpyEmpiricalUnivariateDistribution:
 
     def cdf(self, x):
         # Calculate the empirical CDF
-        q = (np.searchsorted(self.samples, x, side='right') - 0.5) / len(self.samples)
+        q = (np.searchsorted(self.samples, x, side="right") - 0.5) / len(self.samples)
         q = np.clip(q, 0, 1)
         return q
 
@@ -89,7 +92,10 @@ class NumpyEmpiricalUnivariateDistribution:
         next_idx = np.floor(idx) + 1
         next_idx = np.clip(next_idx, 0, len(self.samples) - 1)
         # lerp between the two samples
-        x = self.samples[idx.astype(int)] * (1 - idx_frac) + self.samples[next_idx.astype(int)] * idx_frac
+        x = (
+            self.samples[idx.astype(int)] * (1 - idx_frac)
+            + self.samples[next_idx.astype(int)] * idx_frac
+        )
         return x
 
     def rvs(self, size):
@@ -154,15 +160,20 @@ print(eigvecs)
 
 # Visualize the eigenvectors
 plt.scatter(x_n, y_n, s=1)
-plt.arrow(0, 0, eigvecs[0, 0], eigvecs[1, 0], color='red', width=0.05)
-plt.arrow(0, 0, eigvecs[0, 1], eigvecs[1, 1], color='red', width=0.05)
+plt.arrow(0, 0, eigvecs[0, 0], eigvecs[1, 0], color="red", width=0.05)
+plt.arrow(0, 0, eigvecs[0, 1], eigvecs[1, 1], color="red", width=0.05)
 # Visualize the eigenvectors scaled by the eigenvalues as lines without arrows
-plt.plot([0, eigvecs[0, 0] * eigvals[0]], [0, eigvecs[1, 0] * eigvals[0]], color='green')
-plt.plot([0, eigvecs[0, 1] * eigvals[1]], [0, eigvecs[1, 1] * eigvals[1]], color='green')
+plt.plot(
+    [0, eigvecs[0, 0] * eigvals[0]], [0, eigvecs[1, 0] * eigvals[0]], color="green"
+)
+plt.plot(
+    [0, eigvecs[0, 1] * eigvals[1]], [0, eigvecs[1, 1] * eigvals[1]], color="green"
+)
 
 plt.show()
 
 #%%
+
 
 def visualize_covariance(x, y):
     # Compute the covariance matrix of the mapped samples
@@ -180,17 +191,22 @@ def visualize_covariance(x, y):
 
     # Visualize the eigenvectors
     plt.scatter(x, y, s=1)
-    plt.arrow(0, 0, eigvecs[0, 0], eigvecs[1, 0], color='red', width=0.05)
-    plt.arrow(0, 0, eigvecs[0, 1], eigvecs[1, 1], color='red', width=0.05)
+    plt.arrow(0, 0, eigvecs[0, 0], eigvecs[1, 0], color="red", width=0.05)
+    plt.arrow(0, 0, eigvecs[0, 1], eigvecs[1, 1], color="red", width=0.05)
     # Visualize the eigenvectors scaled by the eigenvalues as lines without arrows
-    plt.plot([0, eigvecs[0, 0] * eigvals[0]], [0, eigvecs[1, 0] * eigvals[0]], color='green')
-    plt.plot([0, eigvecs[0, 1] * eigvals[1]], [0, eigvecs[1, 1] * eigvals[1]], color='green')
+    plt.plot(
+        [0, eigvecs[0, 0] * eigvals[0]], [0, eigvecs[1, 0] * eigvals[0]], color="green"
+    )
+    plt.plot(
+        [0, eigvecs[0, 1] * eigvals[1]], [0, eigvecs[1, 1] * eigvals[1]], color="green"
+    )
 
     plt.show()
 
+
 #%%
 
-visualize_covariance(dataset[:,0], dataset[:,1])
+visualize_covariance(dataset[:, 0], dataset[:, 1])
 visualize_covariance(x_u, y_u)
 visualize_covariance(x_n, y_n)
 

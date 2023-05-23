@@ -1,8 +1,10 @@
 import typing
+
 import typing_extensions
 from numpy.typing import ArrayLike
 
 
+@typing.runtime_checkable
 class SklearnLikeRegressorProtocol(typing.Protocol):
     """
     Protocol for a sklearn regression estimator.
@@ -23,11 +25,11 @@ class SklearnLikeRegressorProtocol(typing.Protocol):
     def set_params(self, **params) -> typing_extensions.Self:
         ...
 
-    def __call__(self, X) -> ArrayLike:
-        ...
 
-
-class SklearnLikeEnsembleRegressorProtocol(SklearnLikeRegressorProtocol):
+@typing.runtime_checkable
+class SklearnLikeEnsembleRegressorProtocol(
+    SklearnLikeRegressorProtocol, typing.Protocol
+):
     """
     Estimator that allows drawing multiple samples using an ensemble method (either real or virtual).
     """
@@ -47,12 +49,11 @@ class SklearnLikeEnsembleRegressorProtocol(SklearnLikeRegressorProtocol):
         ...
 
 
+@typing.runtime_checkable
 class SklearnLikeClassifierProtocol(typing.Protocol):
     """
     Protocol for a sklearn classification estimator.
     """
-
-    n_classes_: int = ...
 
     def fit(self, X: ArrayLike, y: ArrayLike) -> typing_extensions.Self:
         ...
@@ -75,17 +76,14 @@ class SklearnLikeClassifierProtocol(typing.Protocol):
     def set_params(self, **params) -> typing_extensions.Self:
         ...
 
-    def __call__(self, X) -> ArrayLike:
-        ...
 
-
-class SklearnLikeEnsembleClassifierProtocol(SklearnLikeClassifierProtocol):
+@typing.runtime_checkable
+class SklearnLikeEnsembleClassifierProtocol(
+    SklearnLikeClassifierProtocol, typing.Protocol
+):
     """
     Estimator that allows drawing multiple samples using an ensemble method (either real or virtual).
     """
-
-    n_ensemble_members_: int = ...
-    n_classes_: int = ...
 
     def predict_all(self, X) -> ArrayLike:
         """

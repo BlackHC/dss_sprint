@@ -84,4 +84,3 @@ def test_component():
     interface_b = InterfaceB.cast(interface_a)
     assert interface_b.b() == 1
     assert isinstance(interface_b, InterfaceB)
-

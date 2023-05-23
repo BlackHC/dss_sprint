@@ -40,6 +40,7 @@ class ConfigFunc:
     Wrapper class for config functions. We overload __setattr__, __getattr__, __delattr__ to
     forward to the wrapped functions __kwdefaults__.
     """
+
     __callable: callable
 
     def __setattr__(self, name, value):
@@ -55,25 +56,21 @@ class ConfigFunc:
         return self.__callable(*args, **kwargs)
 
 
-
-
-def configfunc(callable):
-    # Get all default parameters from the function.
-    signature = inspect.signature(callable)
-    default_parameters = {
-        name: parameter.default
-        for name, parameter in signature.parameters.items()
-        if parameter.default is not inspect.Parameter.empty
-    }
-    # Get the qualified name of the function.
-    name = callable.__qualname__
-    # Create a dataclass with fields for the defaultparameters.
-    default_parameters_dataclass = dataclasses.make_dataclass(
-        name, default_parameters.keys(), slots=True, weakref_slot=True,
-    )
-
-
-
-
-
-
+# def configfunc(callable):
+#     # Get all default parameters from the function.
+#     signature = inspect.signature(callable)
+#     default_parameters = {
+#         name: parameter.default
+#         for name, parameter in signature.parameters.items()
+#         if parameter.default is not inspect.Parameter.empty
+#     }
+#     # Get the qualified name of the function.
+#     name = callable.__qualname__
+#     # Create a dataclass with fields for the defaultparameters.
+#     default_parameters_dataclass = dataclasses.make_dataclass(
+#         name,
+#         default_parameters.keys(),
+#         slots=True,
+#         weakref_slot=True,
+#     )
+#     raise NotImplementedError()

@@ -20,8 +20,9 @@ class RegressionDataset(Interface):
 
     def get_torch_dataset(self) -> torch.utils.data.Dataset:
         X, Y = self.get_XY()
-        return torch.utils.data.TensorDataset(torch.tensor(X, dtype=torch.float32),
-                                              torch.tensor(Y, dtype=torch.float32))
+        return torch.utils.data.TensorDataset(
+            torch.tensor(X, dtype=torch.float32), torch.tensor(Y, dtype=torch.float32)
+        )
 
 
 @dataclass
@@ -72,6 +73,7 @@ class Higdon(RegressionDataset):
         return (y)
         }
     """
+
     n: int = 1000
     random_state: int = 0
 
@@ -117,6 +119,7 @@ class Oako021d(RegressionDataset):
 
     end
     """
+
     n: int = 100
     random_state: int = 0
 
@@ -167,11 +170,12 @@ class ForrEtAl08(RegressionDataset):
 
     end
     """
+
     n: int = 100
 
     def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         X = np.linspace(0, 1, self.n)
-        Y = (6 * X - 2)**2 * np.sin(12 * X - 4)
+        Y = (6 * X - 2) ** 2 * np.sin(12 * X - 4)
         return X, Y
 
 
@@ -213,11 +217,12 @@ class GramacyLee12(RegressionDataset):
 
     end
     """
+
     n: int = 100
 
     def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         X = np.linspace(0.5, 2.5, self.n)
-        Y = np.sin(10 * np.pi * X) / (2 * X) + (X - 1)**4
+        Y = np.sin(10 * np.pi * X) / (2 * X) + (X - 1) ** 4
         return X, Y
 
 
@@ -256,6 +261,7 @@ class HolsEtAl13Sin(RegressionDataset):
 
     end
     """
+
     n: int = 1000
     random_state: int = 0
 
@@ -305,13 +311,13 @@ class SantnerEtAl03Dc(RegressionDataset):
 
     end
     """
+
     n: int = 100
 
     def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         X = np.linspace(0, 1, self.n)
         Y = np.exp(-1.4 * X) * np.cos(3.5 * np.pi * X)
         return X, Y
-
 
 
 @dataclass
@@ -349,6 +355,7 @@ class CurrinEtAl88Sur(RegressionDataset):
 
     end
     """
+
     n: int = 100
 
     def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
@@ -365,61 +372,61 @@ class Friedman1(RegressionDataset):
     random_state: int = 0
 
     def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
-        return make_friedman1(n_samples=self.n, n_features=self.n_features, noise=self.noise, random_state=self.random_state)
+        return make_friedman1(
+            n_samples=self.n,
+            n_features=self.n_features,
+            noise=self.noise,
+            random_state=self.random_state,
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     dataset = ExampleF()
     X, Y = dataset.get_XY()
     plt.plot(X, Y)
-    plt.title('Example F')
+    plt.title("Example F")
     plt.show()
 
     dataset = Higdon()
     X, Y = dataset.get_XY()
     plt.plot(X, Y)
-    plt.title('Higdon')
+    plt.title("Higdon")
     plt.show()
 
     dataset = Oako021d()
     X, Y = dataset.get_XY()
     plt.plot(X, Y)
-    plt.title('Oako021d')
+    plt.title("Oako021d")
     plt.show()
 
     dataset = ForrEtAl08()
     X, Y = dataset.get_XY()
     plt.plot(X, Y)
-    plt.title('Forretal08')
+    plt.title("Forretal08")
     plt.show()
 
     dataset = GramacyLee12()
     X, Y = dataset.get_XY()
     plt.plot(X, Y)
-    plt.title('GramacyLee12')
+    plt.title("GramacyLee12")
     plt.show()
 
     dataset = HolsEtAl13Sin()
     X, Y = dataset.get_XY()
     plt.plot(X, Y)
-    plt.title('HolsEtAl13Sin')
+    plt.title("HolsEtAl13Sin")
     plt.show()
 
     dataset = SantnerEtAl03Dc()
     X, Y = dataset.get_XY()
     plt.plot(X, Y)
-    plt.title('SantnerEtAl03Dc')
+    plt.title("SantnerEtAl03Dc")
     plt.show()
 
     dataset = CurrinEtAl88Sur()
     X, Y = dataset.get_XY()
     plt.plot(X, Y)
-    plt.title('CurrinEtAl88Sur')
+    plt.title("CurrinEtAl88Sur")
     plt.show()
-
-
-
-
-

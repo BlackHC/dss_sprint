@@ -5,6 +5,7 @@ to indices (or some other way of identifying samples).
 from dataclasses import dataclass
 
 import numpy as np
+import torch.utils.data
 
 from dss_sprint.utils.component import Interface
 
@@ -14,6 +15,8 @@ class ActiveLearningIndices:
     """
     A wrapper class that splits a dataset into a training set and pool set according
     to indices.
+
+    Initially, all samples are in the pool set.
     """
 
     pool_indices: list[int]
