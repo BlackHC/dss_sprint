@@ -4,6 +4,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.datasets import make_classification
 
+from dss_sprint.sample_selection import SampleSelector
+from dss_sprint.sample_selection.individual_scorers import (
+    EntropyScorer,
+    IndividualAcquisitionFunction,
+    StochasticBatchSelector,
+)
 from dss_sprint.utils.wandb_log_path import log_metric, wandb_custom_step
 
 X, y = make_classification(
@@ -61,15 +67,15 @@ x2 = -(model.intercept_ + model.coef_[0, 0] * x1) / model.coef_[0, 1]
 plt.plot(x1, x2, c="k")
 plt.show()
 
+#%%
+
 from tqdm.auto import tqdm
 
 import wandb
-
-#%%
 from dss_sprint.active_learning_indices import ActiveLearningIndices
 
-wandb.init(project="dss_sprint")
-
+wandb.init(mode="disabled")
+# wandb.init(project="dss_sprint")
 
 active_learning_indices = ActiveLearningIndices.from_pool_size(len(X_train))
 
@@ -78,21 +84,33 @@ active_learning_indices.acquire_randomly(10)
 
 accuracy_scores = []
 
-for i in tqdm(range(100)):
-    with wandb_custom_step("acquisition_step"):
-        model = LogisticRegression()
-        model.fit(
-            X_train[active_learning_indices.training_indices],
-            y_train[active_learning_indices.training_indices],
-        )
+selector: SampleSelector = IndividualAcquisitionFunction(
+    EntropyScorer(),
+    StochasticBatchSelector(),
+)
 
-        y_pred = model.predict(X_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        accuracy_scores.append(accuracy)
+for i in tqdm(range(100 // 5)):
+    # with wandb_custom_step("acquisition_step"):
+    model = LogisticRegression()
+    model.fit(
+        X_train[active_learning_indices.training_indices],
+        y_train[active_learning_indices.training_indices],
+    )
 
-        base_indices = active_learning_indices.acquire_randomly(1)
-        log_metric("accuracy", accuracy)
-        log_metric("acquired_index", base_indices[0])
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    accuracy_scores.append(accuracy)
+
+    select_samples = selector(
+        model,
+        X_train[active_learning_indices.training_indices],
+        X_train[active_learning_indices.pool_indices],
+        5,
+    )
+
+    base_indices = active_learning_indices.acquire(select_samples)
+    log_metric("accuracy", accuracy)
+    log_metric("acquired_index", base_indices[0])
 
 #%%
 

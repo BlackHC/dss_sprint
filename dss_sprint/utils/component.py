@@ -13,8 +13,8 @@ T = typing.TypeVar("T")
 
 @typing_extensions.runtime_checkable
 class Interface(typing.Protocol):
-    @classmethod
-    def try_cast(cls: type[T], instance) -> T | None:
+    @staticmethod
+    def explicit_try_cast(cls: type[T], instance) -> T | None:
         if isinstance(instance, Component):
             return instance.query_protocol(cls)
         elif isinstance(instance, cls):
@@ -23,11 +23,19 @@ class Interface(typing.Protocol):
             return None
 
     @classmethod
-    def cast(cls: type[T], instance) -> T:
-        view = cls.try_cast(instance)
+    def try_cast(cls: type[T], instance) -> T | None:
+        return Interface.explicit_try_cast(cls, instance)
+
+    @staticmethod
+    def explicit_cast(cls: type[T], instance) -> T:
+        view = Interface.explicit_try_cast(cls, instance)
         if view is None:
             raise TypeError(f"Cannot cast {instance} as {cls}")
         return view
+
+    @classmethod
+    def cast(cls: type[T], instance) -> T:
+        return Interface.explicit_cast(cls, instance)
 
 
 @typing.runtime_checkable
