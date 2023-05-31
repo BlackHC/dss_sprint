@@ -15,8 +15,21 @@ def example_f(x):
 
 
 class RegressionDataset(Interface):
-    def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
+    def _get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         raise NotImplementedError
+
+    def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
+        X, Y = self._get_XY()
+
+        # Ensure that both X and Y are 2D arrays with shape (n, 1)
+        X = np.atleast_2d(X).T
+        Y = np.atleast_2d(Y).T
+
+        # Ensure that X and Y are float32
+        X = X.astype(np.float32)
+        Y = Y.astype(np.float32)
+
+        return X, Y
 
     def get_torch_dataset(self) -> torch.utils.data.Dataset:
         X, Y = self.get_XY()
@@ -29,7 +42,7 @@ class RegressionDataset(Interface):
 class ExampleF(RegressionDataset):
     n: int = 100
 
-    def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
+    def _get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         X = np.linspace(-12, 6, self.n)
         Y = example_f(X)
         return X, Y
@@ -77,7 +90,7 @@ class Higdon(RegressionDataset):
     n: int = 1000
     random_state: int = 0
 
-    def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
+    def _get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         X = np.linspace(0, 10, self.n)
         Y = np.sin(2 * np.pi * X / 10) + 0.2 * np.sin(2 * np.pi * X / 2.5)
         random = np.random.RandomState(self.random_state)
@@ -123,7 +136,7 @@ class Oako021d(RegressionDataset):
     n: int = 100
     random_state: int = 0
 
-    def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
+    def _get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         random = np.random.RandomState(self.random_state)
         X = random.normal(0, 2, size=self.n)
         X = np.sort(X)
@@ -173,7 +186,7 @@ class ForrEtAl08(RegressionDataset):
 
     n: int = 100
 
-    def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
+    def _get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         X = np.linspace(0, 1, self.n)
         Y = (6 * X - 2) ** 2 * np.sin(12 * X - 4)
         return X, Y
@@ -220,7 +233,7 @@ class GramacyLee12(RegressionDataset):
 
     n: int = 100
 
-    def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
+    def _get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         X = np.linspace(0.5, 2.5, self.n)
         Y = np.sin(10 * np.pi * X) / (2 * X) + (X - 1) ** 4
         return X, Y
@@ -265,7 +278,7 @@ class HolsEtAl13Sin(RegressionDataset):
     n: int = 1000
     random_state: int = 0
 
-    def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
+    def _get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         X = np.linspace(0, 10, self.n)
         Y = X * np.sin(X) / 10
         random = np.random.RandomState(self.random_state)
@@ -314,7 +327,7 @@ class SantnerEtAl03Dc(RegressionDataset):
 
     n: int = 100
 
-    def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
+    def _get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         X = np.linspace(0, 1, self.n)
         Y = np.exp(-1.4 * X) * np.cos(3.5 * np.pi * X)
         return X, Y
@@ -358,7 +371,7 @@ class CurrinEtAl88Sur(RegressionDataset):
 
     n: int = 100
 
-    def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
+    def _get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         X = np.linspace(0, 1, self.n)
         Y = 1 - np.exp(-1 / (2 * X))
         return X, Y
@@ -371,7 +384,7 @@ class Friedman1(RegressionDataset):
     noise: float = 0.0
     random_state: int = 0
 
-    def get_XY(self) -> tuple[np.ndarray, np.ndarray]:
+    def _get_XY(self) -> tuple[np.ndarray, np.ndarray]:
         return make_friedman1(
             n_samples=self.n,
             n_features=self.n_features,
@@ -384,49 +397,49 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     dataset = ExampleF()
-    X, Y = dataset.get_XY()
+    X, Y = dataset._get_XY()
     plt.plot(X, Y)
     plt.title("Example F")
     plt.show()
 
     dataset = Higdon()
-    X, Y = dataset.get_XY()
+    X, Y = dataset._get_XY()
     plt.plot(X, Y)
     plt.title("Higdon")
     plt.show()
 
     dataset = Oako021d()
-    X, Y = dataset.get_XY()
+    X, Y = dataset._get_XY()
     plt.plot(X, Y)
     plt.title("Oako021d")
     plt.show()
 
     dataset = ForrEtAl08()
-    X, Y = dataset.get_XY()
+    X, Y = dataset._get_XY()
     plt.plot(X, Y)
     plt.title("Forretal08")
     plt.show()
 
     dataset = GramacyLee12()
-    X, Y = dataset.get_XY()
+    X, Y = dataset._get_XY()
     plt.plot(X, Y)
     plt.title("GramacyLee12")
     plt.show()
 
     dataset = HolsEtAl13Sin()
-    X, Y = dataset.get_XY()
+    X, Y = dataset._get_XY()
     plt.plot(X, Y)
     plt.title("HolsEtAl13Sin")
     plt.show()
 
     dataset = SantnerEtAl03Dc()
-    X, Y = dataset.get_XY()
+    X, Y = dataset._get_XY()
     plt.plot(X, Y)
     plt.title("SantnerEtAl03Dc")
     plt.show()
 
     dataset = CurrinEtAl88Sur()
-    X, Y = dataset.get_XY()
+    X, Y = dataset._get_XY()
     plt.plot(X, Y)
     plt.title("CurrinEtAl88Sur")
     plt.show()

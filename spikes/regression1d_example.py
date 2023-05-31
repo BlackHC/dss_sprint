@@ -21,8 +21,6 @@ dataset = Higdon()
 X, y = dataset.get_XY()
 X = X.astype(np.float32)
 y = y.astype(np.float32)
-X = X.reshape(-1, 1)
-y = y.reshape(-1, 1)
 
 # Split the dataset into train and test
 X_train, X_test, y_train, y_test = train_test_split(

@@ -64,7 +64,7 @@ def make_parallel(models) -> torch.nn.Module:
     """
     Make an ensemble of models.
     """
-    return Parallel(*models)
+    return Parallel(models)
 
 
 def make_functorch_parallel(models) -> FunctionalModule:

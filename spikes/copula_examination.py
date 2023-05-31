@@ -30,9 +30,9 @@ def make_independent_dataset(n_samples=1000):
 def make_dataset(n_samples=1000):
     x = np.random.uniform(0, 1, n_samples)
     y = np.random.uniform(0, 1, n_samples)
-    x = np.sin(2 * np.pi * x)
-    y = np.sin(2 * np.pi * y)
-    x = x * y
+    # x = np.sin(2 * np.pi * x)
+    # y = np.sin(2 * np.pi * y)
+    y = y + 0.5 * x
     return np.stack([x, y], axis=1)
 
 
@@ -59,9 +59,7 @@ plt.show()
 
 # Show a contour plot of the dataset
 
-_, cs = sns.kdeplot(x=dataset[:, 0], y=dataset[:, 1], shade=True)
-
-plt.clabel(cs, inline=1, fontsize=10)
+sns.kdeplot(x=dataset[:, 0], y=dataset[:, 1], fill=True)
 
 plt.show()
 
@@ -182,6 +180,16 @@ def visualize_covariance(x, y):
     print("Cov:", cov)
     print("Slogdet:", np.linalg.slogdet(cov))
 
+    # Estimate mutual information between the two variables
+    # Compute the entropy of each variable separately using a Gaussian approximation
+    h_x = scipy.stats.multivariate_normal.entropy(mean=[0], cov=cov[0, 0])
+    h_y = scipy.stats.multivariate_normal.entropy(mean=[0], cov=cov[1, 1])
+    # Compute the joint entropy using a Gaussian approximation using the covariance matrix
+    h_xy = scipy.stats.multivariate_normal.entropy(mean=[0, 0], cov=cov)
+    # Compute the mutual information
+    mi = h_x + h_y - h_xy
+    print("MI:", mi)
+
     # Compute the eigenvalues and eigenvectors of the covariance matrix
     eigvals, eigvecs = np.linalg.eig(cov)
 
@@ -216,3 +224,19 @@ Notes:
 This looks a bit more Gaussian but not really.
 
 """
+
+#%%
+
+# Mutual information is invariant to transformations of the variables.
+# So let's estimate the mutual information between the two variables
+# before and after the transformation.
+
+from sklearn.feature_selection import mutual_info_regression
+
+# Mutual information between the two variables before the transformation
+print("MI before:", mutual_info_regression(dataset[:, [0]], dataset[:, 1]))
+
+# Mutual information between the two variables after the transformation
+print("MI after:", mutual_info_regression(x_n[:, None], y_n))
+
+# Compute the

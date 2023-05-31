@@ -10,19 +10,10 @@ class SklearnLikeRegressorProtocol(typing.Protocol):
     Protocol for a sklearn regression estimator.
     """
 
-    def fit(self, X: ArrayLike, y: ArrayLike) -> typing_extensions.Self:
-        ...
-
     def predict(self, X: ArrayLike) -> ArrayLike:
         ...
 
     def score(self, X: ArrayLike, y: ArrayLike) -> float:
-        ...
-
-    def get_params(self, deep=True) -> dict:
-        ...
-
-    def set_params(self, **params) -> typing_extensions.Self:
         ...
 
 
@@ -34,7 +25,13 @@ class SklearnLikeEnsembleRegressorProtocol(
     Estimator that allows drawing multiple samples using an ensemble method (either real or virtual).
     """
 
-    n_ensemble_members_: int = ...
+    # @property
+    # def n_ensemble_members(self) -> int:
+    #     """
+    #     Returns:
+    #         The number of ensemble members.
+    #     """
+    #     ...
 
     def predict_all(self, X) -> ArrayLike:
         """
@@ -55,9 +52,6 @@ class SklearnLikeClassifierProtocol(typing.Protocol):
     Protocol for a sklearn classification estimator.
     """
 
-    def fit(self, X: ArrayLike, y: ArrayLike) -> typing_extensions.Self:
-        ...
-
     def predict(self, X: ArrayLike) -> ArrayLike:
         ...
 
@@ -65,15 +59,6 @@ class SklearnLikeClassifierProtocol(typing.Protocol):
         ...
 
     def predict_log_proba(self, X: ArrayLike) -> ArrayLike:
-        ...
-
-    def score(self, X: ArrayLike, y: ArrayLike) -> float:
-        ...
-
-    def get_params(self, deep=True) -> dict:
-        ...
-
-    def set_params(self, **params) -> typing_extensions.Self:
         ...
 
 

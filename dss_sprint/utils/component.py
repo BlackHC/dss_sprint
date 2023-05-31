@@ -63,3 +63,14 @@ class ComponentView(Component, typing.Generic[T]):
             return self
 
         return self._component.query_protocol(cls)
+
+
+@dataclass
+class ProtocolWrapper(Component):
+    protocol_type: type[typing.Protocol]
+    instance: object
+
+    def query_protocol(self, cls: typing.Type[T]) -> T:
+        if cls is self.protocol_type:
+            return self.instance
+        return None
