@@ -54,6 +54,29 @@ class Component(Interface, typing.Protocol):
 class ComponentView(Component, typing.Generic[T]):
     """
     Adapter for an interface.
+
+    When you want to implement a different interface for a component, you can use this class.
+
+    Example
+    -------
+
+    >>> class InterfaceA(Interface):
+    ...     def a(self):
+    ...         raise NotImplementedError
+    >>> class InterfaceB(Interface):
+    ...     def a(self):
+    ...         raise NotImplementedError
+    >>> class ImplementationAB(InterfaceA, Component):
+    ...     def a(self):
+    ...         return 0
+    ...     def b(self):
+    ...         return 1
+    ...     def query_protocol(self, cls: typing.Type[T]) -> T:
+    ...         if issubclass(InterfaceB, cls):
+    ...             return ImplementationAB.ViewB(self)
+    ...     class ViewB(InterfaceB, ComponentView['ImplementationAB']):
+    ...         def a(self):
+    ...             return self._component.b()
     """
 
     _component: T

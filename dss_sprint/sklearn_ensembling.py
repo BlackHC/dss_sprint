@@ -46,7 +46,7 @@ class SklearnLogSumExpEnsembleModule(torch.nn.Module):
         return prediction_, y_e_
 
 
-class SklearnClassifierEnsemble(Component, SklearnLikeEnsembleClassifierProtocol):
+class SklearnClassifierEnsemble(SklearnLikeEnsembleClassifierProtocol, Component):
     def __init__(
         self, model: skorch.NeuralNetClassifier | skorch.NeuralNetBinaryClassifier
     ):
@@ -114,7 +114,7 @@ class SklearnClassifierEnsemble(Component, SklearnLikeEnsembleClassifierProtocol
 
 
 class SkorchRegressorEnsemble(
-    Component, skorch.NeuralNetRegressor, SklearnLikeEnsembleRegressorProtocol
+    skorch.NeuralNetRegressor, SklearnLikeEnsembleRegressorProtocol, Component
 ):
     def predict_all(self, X) -> ArrayLike:
         nonlin = self._get_predict_nonlinearity()

@@ -87,7 +87,7 @@ class Higdon(RegressionDataset):
         }
     """
 
-    n: int = 1000
+    n: int = 100
     random_state: int = 0
 
     def _get_XY(self) -> tuple[np.ndarray, np.ndarray]:
