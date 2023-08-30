@@ -62,3 +62,15 @@ def test_config_class_merge_via_or():
     assert config4.a == 3
     assert config4.b == "4"
     assert config4.c == 5.0
+
+
+def test_config_class_unpacking():
+    config = TestConfigClass(a=1, b="2", c=3.0)
+
+    a, b, c = config
+
+    assert a == 1
+    assert b == "2"
+    assert c == 3.0
+
+    assert {**config} == {"a": 1, "b": "2", "c": 3.0}

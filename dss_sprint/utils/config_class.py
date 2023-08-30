@@ -8,6 +8,18 @@ __all__ = ["configclass"]
 
 
 def __init_config_class(self, /, **kwargs):
+    """
+    Initialize the config class.
+
+    Either use the keyword arguments to set the fields, or use the default values.
+
+    Args:
+        self: The config class.
+        **kwargs: The keyword arguments to set the fields.
+
+    Returns:
+        None
+    """
     fields = dataclasses.fields(self)
     # Check kwargs only contains fields
     for key in kwargs:
@@ -46,6 +58,16 @@ def __init_config_class(self, /, **kwargs):
 
 # Custom __iter__ to allow for unpacking.
 def __iter_config_class(self):
+    """Iterate over the fields of the config class.
+
+    The fields are returned in the order they are defined in the class.
+
+    Args:
+        self:
+
+    Returns:
+        An iterator over the fields of the config class.
+    """
     for field in dataclasses.fields(self):
         yield getattr(self, field.name)
 
@@ -53,34 +75,41 @@ def __iter_config_class(self):
 # Custom mapping methods to allow for dict-like access:
 # __getitem__, __len__, __contains__, keys, items, values, get
 def __getitem_config_class(self, key):
+    """Get the value of a field in the config class."""
     return getattr(self, key)
 
 
 def __len_config_class(self):
+    """Get the number of fields in the config class."""
     return len(dataclasses.fields(self))
 
 
 def __contains_config_class(self, key):
+    """Check if the config class contains a field."""
     return hasattr(self, key)
 
 
 def __keys_config_class(self):
+    """Get the keys of the config class."""
     return [field.name for field in dataclasses.fields(self)]
 
 
 def __items_config_class(self):
+    """Get the items of the config class."""
     return [
         (field.name, getattr(self, field.name)) for field in dataclasses.fields(self)
     ]
 
 
 def __values_config_class(self):
+    """Get the values of the config class."""
     return [getattr(self, field.name) for field in dataclasses.fields(self)]
 
 
 # Add | operator to allow for merging config classes (strict).
 def __or_config_class(self, other):
-    # Verify that self can contain all fields from other.
+    """Merge two config classes."""
+    # Verify that self can contain all fields from `other`.
     other_dict = {**other}
     # Check that all fields in other are in self.
     missing_fields = set(other_dict.keys()) - set(self.keys())
@@ -96,6 +125,15 @@ def __or_config_class(self, other):
 # Create a configclass decorator that wraps dataclass
 @functools.wraps(dataclasses.dataclass)
 def configclass(cls, /, **kwargs):
+    """Create a config class from a dataclass.
+
+    Args:
+        cls:
+        **kwargs:
+
+    Returns:
+
+    """
     # Assert that there is no init keyword argument.
     if "init" in kwargs:
         raise ValueError("Cannot specify init keyword argument for configclass")
@@ -117,7 +155,9 @@ def configclass(cls, /, **kwargs):
     # Check if the class has any of the custom methods.
     for method_name, method in custom_methods.items():
         if method_name in cls.__dict__:
-            raise ValueError(f"Cannot specify {method_name} method for configclass")
+            raise ValueError(
+                f"Cannot specify {method_name} method for configclass ({cls} already has this method)!"
+            )
     # Set the custom methods.
     for method_name, method in custom_methods.items():
         setattr(cls, method_name, method)
@@ -130,6 +170,14 @@ added based on the fields defined in the class. This is a wrapper around datacla
 
 It uses the class variables to set the default values for the fields---so changing
 class variables will change the (future) default values for the fields.
+
+Further, on instantiation of a configclass instance, the fields can be set using
+keyword arguments. If a field is not set, the default value is used.
+
+Two configclasses can be merged using the | operator. The fields of the right-hand
+side configclass are used to overwrite the fields of the left-hand side configclass.
+
+configclasses can be iterated over, and they can be accessed and unpacked like a dict.
 
 It supports fields with default values, fields with default factories, and fields
 with no default value.
