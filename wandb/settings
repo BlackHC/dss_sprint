@@ -1,0 +1,4 @@
+[default]
+entity = oatml-andreas-kirsch
+project = dss_sprint
+base_url = https://api.wandb.ai
