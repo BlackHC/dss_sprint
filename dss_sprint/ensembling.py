@@ -69,7 +69,7 @@ def make_parallel(models) -> torch.nn.Module:
 
 def make_functorch_parallel(models) -> FunctionalModule:
     """
-    Make an ensemble of using functorch's combine_state_for_ensemble.
+    Make an ensemble using functorch's combine_state_for_ensemble.
     """
     func, params, buffers = functorch.combine_state_for_ensemble(models)
     # convert params to a torch.nn.ParameterList

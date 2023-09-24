@@ -32,9 +32,9 @@ from dss_sprint.sklearn_ensembling import (
 )
 from dss_sprint.utils.wandb_log_path import commit, log_metric
 
-dataset = regression1d.Higdon()
+dataset = regression1d.Higdon(n=128)
 X_train, y_train = dataset.get_XY()
-X_test, y_test = regression1d.Higdon(n=1000).get_XY()
+X_test, y_test = regression1d.Higdon(n=256, random_state=10).get_XY()
 
 # %%
 
@@ -69,17 +69,18 @@ def create_train_iterator(
     multiplexed_dataset = ConcatDataset([train_dataset, unlabeled_dataset])
     model_sanity.interleaved_batch_sampler = InterleavedRandomBatchSampler(
         dataset_sizes=[len(train_dataset), len(unlabeled_dataset)],
-        batch_sizes=[32, 128],
+        batch_sizes=[batch_size, batch_size],
         training_length=training_length,
     )
     return torch.utils.data.DataLoader(
         multiplexed_dataset,
-        batch_size=1,
         batch_sampler=model_sanity.interleaved_batch_sampler,
-        shuffle=False,
         num_workers=0,
         pin_memory=True,
+        # These settings sound weird but are needed together a custom batch_sampler.
+        batch_size=1,
         drop_last=False,
+        shuffle=False,
     )
 
 
@@ -95,13 +96,14 @@ model_sanity = SkorchDiversityRegressorEnsemble(
     # train_split=predefined_split(torch.utils.data.TensorDataset(torch.from_numpy(X_test), torch.from_numpy(y_test))),
     verbose=1,
     device="mps",
-    loss_lambda=0.05,
+    loss_lambda=0.000001,
     iterator_train=create_train_iterator,
     iterator_train__unlabeled_dataset=skorch.dataset.Dataset(X_test, y_test),
-    iterator_train__training_length=len(X_train),
+    iterator_train__training_length=256,
 )
 
-model_sanity.fit(X_train[X_train[:, 0] < 6, :], y_train[X_train[:, 0] < 6, :])
+model_sanity.fit(X_train, y_train)
+# model_sanity.fit(X_train[X_train[:, 0] < 8, :], y_train[X_train[:, 0] < 8, :])
 
 #%%
 

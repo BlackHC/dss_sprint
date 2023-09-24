@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import TensorDataset
+from torch.utils.data import ConcatDataset, TensorDataset
 
 from dss_sprint.interleaving_sampler import InterleavedRandomBatchSampler
 
@@ -8,18 +8,25 @@ def test_interleaving_random_batch_sampler():
     dominant_dataset = TensorDataset(torch.linspace(0, 9, 10), torch.linspace(0, 9, 10))
     sub_dataset = TensorDataset(torch.linspace(50, 59, 10), torch.linspace(50, 59, 10))
 
-    sampler = InterleavedRandomBatchSampler([dominant_dataset, sub_dataset], [2, 5])
+    datasets = [dominant_dataset, sub_dataset]
+    dataset = ConcatDataset(datasets)
+
+    sampler = InterleavedRandomBatchSampler(
+        dataset_sizes=[len(dominant_dataset), len(sub_dataset)], batch_sizes=[2, 5]
+    )
 
     for batch in sampler:
+        print(batch)
         indices = sampler.demultiplex_indices(batch)
+        print(indices)
         # assert all indices for all groups are in range
         assert all(
             0 <= index < len(dataset)
-            for dataset, indices in zip(sampler.datasets, indices)
+            for dataset, indices in zip(datasets, indices)
             for index in indices
         )
 
-        data = sampler.demultiplex_data([sampler.multiplexed_dataset[i] for i in batch])
+        data = sampler.demultiplex_data([dataset[i] for i in batch])
         # assert the length of each group is correct
         assert all(
             len(group) == batch_size
@@ -29,7 +36,7 @@ def test_interleaving_random_batch_sampler():
         assert all(0 <= data[0][j][i] < 10 for i in range(2) for j in range(2))
         assert all(50 <= data[1][j][i] < 60 for i in range(2) for j in range(5))
 
-        fetched_data = [sampler.multiplexed_dataset[i] for i in batch]
+        fetched_data = [dataset[i] for i in batch]
         # test collation
         collated = sampler.collate(fetched_data)
         group1, group2 = collated

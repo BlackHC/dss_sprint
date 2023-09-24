@@ -120,14 +120,14 @@ class SimpleRandomFixedLengthSampler(Sampler):
 
 @dataclass
 class InterleavedRandomBatchSampler(Sampler[list[int]]):
-    """
-    Samples batches from multiple datasets.
+    """Samples batches from multiple datasets. Each dataset has its own batchsize.
+    The batches are concatenated.
 
     The first dataset is considered 'dominant' and sampled without replacement (and drop_last=True),
     the rest are sampled with replacement. That is, the first dataset determines the epoch
     length.
 
-    Each dataset has its own batchsize. The batches are concatenated.
+    However, an optional `training_length` parameter can be used to specify a different epoch length.
     """
 
     training_length: int
@@ -168,7 +168,7 @@ class InterleavedRandomBatchSampler(Sampler[list[int]]):
                     self.dataset_sizes[0], self.training_length
                 ),
                 batch_size=self.batch_sizes[0],
-                drop_last=False,
+                drop_last=True,
             )
         ] + [
             BatchSampler(

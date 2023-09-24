@@ -106,7 +106,7 @@ def create_regression_models(num_models):
         SirenNet(dim_in=1, dim_hidden=50, dim_out=1, num_layers=3, w0_initial=30)
         for _ in range(num_models)
     ]
-    ensemble = ensembling.make_parallel(models)
+    ensemble = ensembling.make_functorch_parallel(models)
 
     ensemble_model = SklearnMeanEnsembleModule(ensemble)
     return ensemble_model
@@ -133,6 +133,7 @@ y_pred = model_sanity.predict(X)
 mse = mean_squared_error(Y, y_pred)
 print(f"Sanity check MSE: {mse}")
 
+#%%
 # Plot the data.
 plt.figure(figsize=(10, 5))
 plt.scatter(X_train, y_train, c="red", label="true")

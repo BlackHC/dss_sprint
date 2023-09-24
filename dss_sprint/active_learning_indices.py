@@ -33,7 +33,7 @@ class ActiveLearningIndices:
         Acquire samples from within the pool set and move them to the training set.
         """
         base_indices = self.get_base_indices_from_pool(pool_based_indices)
-        self.training_indices += base_indices
+        self.training_indices.extend(base_indices)
         # Remove pool_based_indices from self.pool_indices
         self.pool_indices = [
             index
