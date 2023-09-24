@@ -74,3 +74,18 @@ def test_config_class_unpacking():
     assert c == 3.0
 
     assert {**config} == {"a": 1, "b": "2", "c": 3.0}
+
+
+def test_config_class_invoke():
+    @configclass
+    class TestConfigClass:
+        a: int
+        b: str
+        c: float
+
+    def func(a, b, c):
+        return a, b, c
+
+    config = TestConfigClass(a=1, b="2", c=3.0)
+    result = config.invoke(func)
+    assert result == (1, "2", 3.0)

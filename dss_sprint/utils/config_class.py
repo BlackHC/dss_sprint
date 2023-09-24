@@ -6,6 +6,8 @@ import functools
 
 __all__ = ["configclass"]
 
+import inspect
+
 
 def __init_config_class(self, /, **kwargs):
     """
@@ -122,6 +124,27 @@ def __or_config_class(self, other):
     return self.__class__(**merged_fields)
 
 
+def __invoke_config_class(self, func):
+    """Invoke a callable with config class's fields."""
+    # Assert that func is callable.
+    if not callable(func):
+        raise ValueError(f"{func} is not callable")
+    # Filter the fields of the config class using the callable's signature.
+    signature = inspect.signature(func)
+    # Get the parameters of the callable.
+    parameters = signature.parameters
+    # Get the fields of the config class.
+    kwargs = {**self}
+    # Filter the fields of the config class using the parameters of the callable.
+    kwargs = {
+        key: kwargs[key]
+        for key in parameters
+        if key in kwargs and parameters[key].kind != inspect.Parameter.VAR_KEYWORD
+    }
+    # Invoke the callable with the filtered fields.
+    return func(**kwargs)
+
+
 # Create a configclass decorator that wraps dataclass
 @functools.wraps(dataclasses.dataclass)
 def configclass(cls, /, **kwargs):
@@ -150,6 +173,7 @@ def configclass(cls, /, **kwargs):
         "keys": __keys_config_class,
         "items": __items_config_class,
         "values": __values_config_class,
+        "invoke": __invoke_config_class,
         "__or__": __or_config_class,
     }
     # Check if the class has any of the custom methods.
