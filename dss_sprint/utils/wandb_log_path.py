@@ -10,6 +10,7 @@ def wandb_custom_step(name):
     """
     A context manager for wandb steps.
 
+
     Args:
         name: The name of the step.
         is_summary_step: Whether this is a summary step.
@@ -26,7 +27,7 @@ def wandb_custom_step(name):
         try:
             yield
         finally:
-            wandb.log({step_metric: xpath.current_step_index}, commit=True)
+            commit()
 
 
 def log_metric(metric_name, value, is_summary=False):
