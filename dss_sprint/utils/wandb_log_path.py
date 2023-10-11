@@ -22,7 +22,7 @@ def wandb_custom_step(name):
     with xpath.step(name, is_summary_step=False):
         step_metric = xpath.metric_name("step", is_summary=False)
         wandb.log({step_metric: xpath.current_step_index}, commit=False)
-        if xpath.current_step_count == 1:
+        if xpath.current_step_count == 0:
             wandb.define_metric(f"{xpath.current_step_name}/*", step_metric)
         try:
             yield
