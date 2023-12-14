@@ -48,7 +48,6 @@ toml = {version = "^0.10.2", optional = true}
 livereload = {version = "^2.6.3", optional = true}
 pyreadline = {version = "^2.1", optional = true}
 mike = { version="^1.1.2", optional=true}
-torch = "^1.13.1"
 blackhc-project = "^2.6.0"
 pandas = "^1.5.2"
 scipy = "^1.10.0"
@@ -63,6 +62,7 @@ siren-pytorch = "^0.1.6"
 plotly = "^5.14.1"
 rich = "^13.3.5"
 markdownify = "^0.11.6"
+torch = "^2.1.1"
 
 [tool.poetry.extras]
 test = [
