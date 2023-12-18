@@ -1,14 +1,95 @@
+import contextlib
+import os
 import threading
 import types
-import contextlib
 import typing
 from dataclasses import dataclass
 
+import torch
 
-class Context(types.SimpleNamespace):
+T = typing.TypeVar("T")
+
+
+class Context(dict[str, list]):
     """
-    A simple namespace that allows you to access attributes as if they were keys.
+    Wrapper class for scopes .
     """
+
+    def walk(self) -> typing.Iterable[tuple[str, typing.Any]]:
+        """Replay the collected instrumentation data.
+
+        This returns an iterable of (name, value) pairs.
+        """
+        for key, values in self.items():
+            for value in values:
+                yield key, value
+
+    def tree_walk(self) -> typing.Iterable[tuple[tuple[str], typing.Any]]:
+        """Replay the collected instrumentation data.
+
+        This returns an iterable of (path, value) pairs, where path is a tuple of keys.
+        """
+        for key, values in self.items():
+            for value in values:
+                yield (key,), value
+
+                if isinstance(value, Context):
+                    for sub_path, sub_value in value.tree_walk():
+                        yield (key,) + sub_path, sub_value
+
+    def transform_values(self, t_value: typing.Callable[[T], T]) -> "Context":
+        """Transform the collected instrumentation data.
+
+        This returns a new context with all values transformed by the given function.
+        Recursively applies to sub-contexts.
+        """
+        return Context(
+            {
+                k: [
+                    v.transform_values(t_value)
+                    if isinstance(v, Context)
+                    else t_value(v)
+                    for v in vs
+                ]
+                for k, vs in self.items()
+            }
+        )
+
+    def to_dict(self) -> dict:
+        """Convert the collected instrumentation data to a dict.
+
+        This returns a new context with all values transformed by the given function.
+        Recursively applies to sub-contexts.
+        """
+        return {
+            k: [v.to_dict() if isinstance(v, Context) else v for v in vs]
+            for k, vs in self.items()
+        }
+
+    def to_numpy(self) -> "Context":
+        """Convert the collected instrumentation data to a dict.
+
+        This returns a new context with all values transformed by the given function.
+        Recursively applies to sub-contexts.
+        """
+        return self.transform_values(
+            t_value=lambda x: x.numpy(force=True) if isinstance(x, torch.Tensor) else x,
+        )
+
+    def to_simple_namespace(self) -> types.SimpleNamespace:
+        """Convert the collected instrumentation data to a SimpleNamespace.
+
+        This returns a new context with all values transformed by the given function.
+        Recursively applies to sub-contexts.
+        """
+        return types.SimpleNamespace(
+            **{
+                k: [
+                    v.to_simple_namespace() if isinstance(v, Context) else v for v in vs
+                ]
+                for k, vs in self.items()
+            }
+        )
 
 
 @dataclass
@@ -38,84 +119,124 @@ class Instrumentation:
             instrument.record("info", info)
         ```
 
-        All records and scopes are stored as lists of SimpleNamespace objects
+        All scopes are stored as lists of SimpleNamespace objects
     """
 
-    # Thead local storage
     _thread_local: threading.local = threading.local()
 
     @property
-    def _current(self) -> list[Context] | None:
-        """Get the current instrumentation data"""
-        return getattr(self._thread_local, "current", None)
+    def _context(self) -> list[Context] | None:
+        """Get the context instrumentation data"""
+        return getattr(self._thread_local, "context", None)
+
+    @property
+    def is_active(self) -> bool:
+        """Check if instrumentation is currently active."""
+        return self._context is not None
 
     @contextlib.contextmanager
-    def scope(self, name: str):
+    def scope(self, key: str):
         """Create a new scope.
 
         If no data is being collected currently, this is a no-op.
         """
-        outer = self._current
+        outer = self._context
         if outer is None:
             yield
         else:
             inner = Context()
-            self._thread_local.current = inner
+            self._thread_local.context = inner
             try:
                 yield
-                outer.__dict__.setdefault(name, []).append(inner)
+                outer.setdefault(key, []).append(inner)
             finally:
-                self._thread_local.current = outer
+                self._thread_local.context = outer
 
-    def record(self, name: str, value: typing.Any):
-        """Record a value.
+    def log(self, **kwargs):
+        """Record a set of values.
 
-        If no data is being collected currently, this is a no-op.
+        If no data is being collected, this is a no-op.
         """
-        current = self._current
-        if current is not None:
-            current.__dict__.setdefault(name, []).append(value)
+        context = self._context
+        if context is not None:
+            for key, value in kwargs.items():
+                context_value = value
+                # detach if value is a torch.Tensor
+                if isinstance(value, torch.Tensor):
+                    context_value = value.detach()
+                context.setdefault(key, []).append(context_value)
+
+    def __call__(self, **kwargs):
+        """Record a single value.
+
+        If no data is being collected, this is a no-op.
+        """
+        assert len(kwargs) == 1
+        self.log(**kwargs)
+        return next(iter(kwargs.values()))
 
     @contextlib.contextmanager
-    def collect(self) -> Context:
+    def collect(self, enabled=True) -> Context:
         """Collect instrumentation data.
 
         This is a context manager that collects all instrumentation data
         that is recorded inside the context.
         """
-        outer = self._current
-        scope = Context()
-        self._thread_local.current = scope
+        context = Context()
+
+        if not enabled:
+            yield context
+            return
+
+        outer = self._context
+        self._thread_local.context = context
         try:
-            yield scope
+            yield context
             # If there is an outer, merge scope into it.
             if outer is not None:
                 # Merge each key separately.
-                for key, value in scope.__dict__.items():
-                    outer.__dict__.setdefault(key, []).extend(value)
+                for key, values in context.items():
+                    outer.setdefault(key, []).extend(values)
         finally:
-            self._thread_local.current = outer
+            self._thread_local.context = outer
 
-    def replay(self, context: Context) -> typing.Iterable[tuple[str, typing.Any]]:
-        """Replay the collected instrumentation data.
 
-        This returns an iterable of (name, value) pairs.
-        """
-        for key, values in context.__dict__.items():
-            for value in values:
-                yield key, value
+class NullInstrumentation(Instrumentation):
+    class _NullScope:
+        def __enter__(self):
+            pass
 
-    def deep_replay(
-        self, context: Context
-    ) -> typing.Iterable[tuple[tuple[str], typing.Any]]:
-        """Replay the collected instrumentation data.
+        def __exit__(self, *args):
+            pass
 
-        This returns an iterable of (path, value) pairs, where path is a tuple of keys.
-        """
-        for key, values in context.__dict__.items():
-            for value in values:
-                yield (key,), value
+        def __call__(self, func):
+            return func
 
-                if isinstance(value, Context):
-                    for path, value in self.deep_replay(value):
-                        yield (key,) + path, value
+    _null_scope = _NullScope()
+
+    @property
+    def is_active(self) -> bool:
+        return False
+
+    def log(self, **kwargs):
+        pass
+
+    def __call__(self, **kwargs):
+        if len(kwargs) == 1:
+            return next(iter(kwargs.values()))
+
+    def scope(self, key: str):
+        return NullInstrumentation._null_scope
+
+    @contextlib.contextmanager
+    def collect(self, enabled=True) -> Context:
+        # Log a warning if enabled.
+        if enabled:
+            print("Warning: collecting data with NullInstrumentation")
+        yield Context()
+
+
+if os.getenv("NO_INSTRUMENTATION"):
+    instrumentation = NullInstrumentation()
+else:
+    instrumentation = Instrumentation()
