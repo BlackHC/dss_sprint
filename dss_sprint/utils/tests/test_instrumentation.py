@@ -1,4 +1,8 @@
-from dss_sprint.utils.instrumentation import Context, Instrumentation, NullInstrumentation
+from dss_sprint.utils.instrumentation import (
+    Context,
+    Instrumentation,
+    NullInstrumentation,
+)
 
 
 def test_instrumentation_example():
@@ -9,8 +13,9 @@ def test_instrumentation_example():
 
         with instrument.scope("my_scope"):
             instrument.log(info=2)
+            assert instrument.spy(loss=3) == 3
 
-    assert run_info == Context(loss=[1], my_scope=[Context(info=[2])])
+    assert run_info == Context(loss=[1], my_scope=[Context(info=[2], loss=[3])])
 
 
 def test_instrumentation_decorator():
@@ -133,9 +138,11 @@ def test_instrumentation_to_plain_dict():
 
     assert run_info.to_dict() == {
         "loss": [1],
-        "my_scope": [{
-            "info": [2],
-        }],
+        "my_scope": [
+            {
+                "info": [2],
+            }
+        ],
     }
 
 

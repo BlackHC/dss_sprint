@@ -166,7 +166,7 @@ class Instrumentation:
                     context_value = value.detach()
                 context.setdefault(key, []).append(context_value)
 
-    def __call__(self, **kwargs):
+    def spy(self, **kwargs):
         """Record a single value.
 
         If no data is being collected, this is a no-op.
@@ -221,7 +221,7 @@ class NullInstrumentation(Instrumentation):
     def log(self, **kwargs):
         pass
 
-    def __call__(self, **kwargs):
+    def spy(self, **kwargs):
         if len(kwargs) == 1:
             return next(iter(kwargs.values()))
 
