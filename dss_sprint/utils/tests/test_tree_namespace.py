@@ -144,3 +144,7 @@ if __name__ == "__main__":
     test_tree_namespace_wildcard()
     test_tree_namespace_wildcard_2()
     test_tree_namespace_wildcard_at()
+    test_tree_namespace_keys()
+    test_tree_namespace_values()
+    test_tree_namespace_items()
+    test_tree_namespace_schema()
