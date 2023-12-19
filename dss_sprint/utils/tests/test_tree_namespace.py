@@ -1,4 +1,4 @@
-from dss_sprint.utils.tree_namespace import TreeNamespace
+from dss_sprint.utils.tree_namespace import TreeNamespace, keys, values, items, schema
 
 
 def test_tree_namespace_simple():
@@ -14,7 +14,7 @@ def test_tree_namespace_simple():
     assert len(dkns) == 2, "Failed on __len__ method"
     # Test __repr__ method
     assert (
-        repr(dkns) == "DeepKeyNamespace({'a': {'b': 1, 'c': 2}, 'd': 3})"
+        repr(dkns) == "TreeNamespace({'a': {'b': 1, 'c': 2}, 'd': 3})"
     ), "Failed on __repr__ method:\n" + repr(dkns)
 
     assert dkns.a.b == 1, "Failed on __getattribute__ method"
@@ -96,6 +96,46 @@ def test_tree_namespace_wildcard_at():
     assert sub_dkns["a"] == 5, "Failed on __getitem__ method"
     # Test __len__ method
     assert len(sub_dkns) == 5, "Failed on __len__ method"
+
+
+def test_tree_namespace_keys():
+    # Create a dictionary for testing
+    test_dict = {"a/b": 1, "a/c": 2, "d": 3}
+    # Create a DeepKeyNamespace object
+    dkns = TreeNamespace(test_dict)
+    # Test keys method
+    assert keys(dkns) == ["a", "d"], "Failed on keys method"
+
+
+def test_tree_namespace_values():
+    # Create a dictionary for testing
+    test_dict = {"a/b": 1, "a/c": 2, "d": 3}
+    # Create a DeepKeyNamespace object
+    dkns = TreeNamespace(test_dict)
+    # Test values method
+    assert values(dkns) == [dkns.a, dkns.d], f"Failed on values method:\n{values(dkns)}"
+
+
+def test_tree_namespace_items():
+    # Create a dictionary for testing
+    test_dict = {"a/b": 1, "a/c": 2, "d": 3}
+    # Create a DeepKeyNamespace object
+    dkns = TreeNamespace(test_dict)
+    # Test items method
+    assert items(dkns) == [("a", dkns.a), ("d", dkns.d)], "Failed on items method"
+
+
+def test_tree_namespace_schema():
+    # Create a dictionary for testing
+    test_dict = {"a/b": 1, "a/c": 2, "d": 3}
+    # Create a DeepKeyNamespace object
+    dkns = TreeNamespace(test_dict)
+    # Test schema method
+    assert schema(dkns) == {"a/b": int, "a/c": int, "d": int}, "Failed on schema method"
+    assert schema(dkns) == {
+        "a": {"b": int, "c": int},
+        "d": int,
+    }, "Failed on schema method"
 
 
 if __name__ == "__main__":

@@ -44,21 +44,28 @@ class TreeNamespace:
                 schema_dict[key] = get_generic_type(value)
         return TreeNamespace(schema_dict)
 
-    def _keys(self):
+    def _keys(self) -> list[str]:
         """Get the direct keys of the namespace as list."""
         # Note: sets are not ordered, but dicts are ordered in Python 3.7+
         keys = {key.split("/")[0]: None for key in self._dict.keys()}
         return list(keys.keys())
 
-    def _values(self):
+    def _values(self) -> list[Any]:
         """Get the direct values of the namespace as list.
 
         Sub-namespaces are of type TreeNamespace, too.
         """
         return [self[key] for key in self._keys()]
 
-    def __dir__(self) -> typing.Iterable[str]:
-        return super().__dir__() + self._keys()
+    def _items(self) -> list[tuple[str, Any]]:
+        """Get the direct items of the namespace as list.
+
+        Sub-namespaces are of type TreeNamespace, too.
+        """
+        return [(key, self[key]) for key in self._keys()]
+
+    def __dir__(self) -> list[str]:
+        return [*super().__dir__(), *self._keys()]
 
     def __getitem__(self, name: str) -> typing.Any:
         """Get a value from the namespace.
@@ -129,11 +136,25 @@ class TreeNamespace:
             }
 
     def __repr__(self):
-        return f"DeepKeyNamespace({self.__simple__repr__()})"
+        return f"TreeNamespace({self.__simple__repr__()})"
 
     def __len__(self):
         """Get the number of keys without / or the number of unique prefixes."""
         return len(self._keys())
+
+    def __eq__(self, other):
+        """Check if two TreeNamespace objects are equal."""
+        if isinstance(other, self.__class__):
+            return self._dict == other._dict
+        elif isinstance(other, dict):
+            return self._dict == other or all(
+                left == right for left, right in zip(self._items(), other.items())
+            )
+        return False
+
+    def __hash__(self):
+        """Return the hash of the TreeNamespace object."""
+        return hash(set(self.__dict__.items()))
 
 
 def get_generic_type(obj: Any) -> type:
@@ -168,3 +189,63 @@ def pretty_deep_key_namespace(value, ctx):
         TreeNamespace,
         **value.__simple__repr__(),
     )
+
+
+def keys(obj: Any) -> list[str]:
+    """Get all keys of an object.
+
+    For lists, tuples, and dicts, this returns the keys of the elements.
+    """
+    if isinstance(obj, TreeNamespace):
+        return obj._keys()
+    elif isinstance(obj, dict):
+        return list(obj.keys())
+    elif isinstance(obj, (list, tuple)):
+        return list(range(len(obj)))
+    else:
+        raise TypeError(f"Cannot get keys of type {type(obj)}")
+
+
+def values(obj: Any) -> list[Any]:
+    """Get all values of an object.
+
+    For lists, tuples, and dicts, this returns the values of the elements.
+    """
+    if isinstance(obj, TreeNamespace):
+        return obj._values()
+    elif isinstance(obj, dict):
+        return list(obj.values())
+    elif isinstance(obj, (list, tuple)):
+        return list(obj)
+    else:
+        raise TypeError(f"Cannot get values of type {type(obj)}")
+
+
+def items(obj: Any) -> list[tuple[str, Any]]:
+    """Get all items of an object.
+
+    For lists, tuples, and dicts, this returns the items of the elements.
+    """
+    if isinstance(obj, TreeNamespace):
+        return obj._items()
+    elif isinstance(obj, dict):
+        return list(obj.items())
+    elif isinstance(obj, (list, tuple)):
+        return list(enumerate(obj))
+    else:
+        raise TypeError(f"Cannot get items of type {type(obj)}")
+
+
+def schema(obj: Any) -> TreeNamespace | type:
+    """Get the schema of an object.
+
+    For lists, tuples, and dicts, this returns the schema of the elements.
+    """
+    if isinstance(obj, TreeNamespace):
+        return obj._schema()
+    elif isinstance(obj, dict):
+        return TreeNamespace({key: schema(value) for key, value in obj.items()})
+    elif isinstance(obj, (list, tuple)):
+        return TreeNamespace({str(key): schema(value) for key, value in enumerate(obj)})
+    else:
+        return get_generic_type(obj)
