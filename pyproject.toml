@@ -13,10 +13,7 @@ classifiers=[
     'License :: OSI Approved :: MIT License',
     'Natural Language :: English',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
 ]
 packages = [
     { include = "dss_sprint" },
@@ -24,7 +21,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
+python = ">=3.11,<3.12"
 fire = "0.4.0"
 
 black  = { version = "^22.3.0", optional = true}
@@ -35,7 +32,6 @@ pytest  = { version = "^7.0.1", optional = true}
 pytest-cov  = { version = "^3.0.0", optional = true}
 tox  = { version = "^3.24.5", optional = true}
 virtualenv  = { version = "^20.13.1", optional = true}
-pip  = { version = "^22.0.3", optional = true}
 mkdocs  = { version = "^1.2.3", optional = true}
 mkdocs-include-markdown-plugin  = { version = "^3.2.3", optional = true}
 mkdocs-material  = { version = "^8.1.11", optional = true}
@@ -64,6 +60,7 @@ rich = "^13.3.5"
 markdownify = "^0.11.6"
 torch = "^2.1.1"
 prettyprinter = "^0.18.0"
+keras = "^3.0.2"
 
 [tool.poetry.extras]
 test = [
@@ -75,7 +72,7 @@ test = [
     "pytest-cov"
     ]
 
-dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml"]
+dev = ["tox", "pre-commit", "virtualenv", "twine", "toml"]
 
 doc = [
     "mkdocs",
