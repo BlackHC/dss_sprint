@@ -1,4 +1,4 @@
-from dss_sprint.utils.tree_namespace import TreeNamespace, keys, values, items, schema
+from dss_sprint.utils.tree_namespace import TreeNamespace, items, keys, schema, values
 
 
 def test_tree_namespace_simple():

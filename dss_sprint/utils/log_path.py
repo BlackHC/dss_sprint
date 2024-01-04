@@ -17,7 +17,7 @@ class LogPathStep:
     step_index: int
     unique_path: str
     is_summary_step: bool = False
-    parent: "LogPathStep" = None
+    parent: "LogPathStep | None" = None
     used_names: dict[str, int] = dataclasses.field(
         default_factory=lambda: defaultdict(int)
     )

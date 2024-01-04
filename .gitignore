@@ -112,3 +112,4 @@ site/
 
 # Idea/PyCharm/etc
 /.idea/
+wandb/

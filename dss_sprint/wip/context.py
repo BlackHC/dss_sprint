@@ -13,14 +13,13 @@ import dataclasses
 import functools
 import inspect
 import types
-import warnings
 import typing
+import warnings
 from collections import ChainMap
 from dataclasses import dataclass
 from typing import Any, Optional, TypeVar
 
 import pytest
-
 
 # @dataclass(frozen=True, slots=True)
 # class ResolvedField:
@@ -80,31 +79,31 @@ class ContextManager:
 #
 # @context
 # class Context:
-# 	"""
-# 	Maybe @context can provide the actual context manager inside this all.
-# 	"""
+#     """
+#     Maybe @context can provide the actual context manager inside this all.
+#     """
 #
 # @sub_context(class | func | method | key | special stuff)
 # class SubContext:
-# 	"""
-# 	All other decorators inside will be conditioned on the
-# 	context predict and whenever the class etc is used/called we will update the context.
-# 	"""
+#     """
+#     All other decorators inside will be conditioned on the
+#     context predict and whenever the class etc is used/called we will update the context.
+#     """
 #
 # @delayed_context(frame_info)
 # class SubContext:
-# 	"""
-# 	Whenever a new context is entered, all not yet visited stack frames will be looked to see if there are any delayed context updates to be applied.
+#     """
+#     Whenever a new context is entered, all not yet visited stack frames will be looked to see if there are any delayed context updates to be applied.
 #
-# 	This is useful for more specific context updates depending on the state of the app
-# 	"""
+#     This is useful for more specific context updates depending on the state of the app
+#     """
 #
 # class Delayed:
-# 	"""
-# 	Is a proxy for a field in a subcontext etc
-# 	and will execute a lambda or so to resolve the value at call-time using the context and other information.
-# 	"""
-# 	...
+#     """
+#     Is a proxy for a field in a subcontext etc
+#     and will execute a lambda or so to resolve the value at call-time using the context and other information.
+#     """
+#     ...
 
 """
 Design:
@@ -224,6 +223,7 @@ def patch_function(func, context_map):
             signature.parameters[k].replace(default=v) for k, v in all_params.items()
         ]
     )
+
     # We create a wrapper and apply the defaults to the args and kwargs
     # and then call the original function with the updated args and kwargs.
     # This way we can use the original function signature and still have the
@@ -354,14 +354,14 @@ class SubContextTargetDecorator:
                 # Inspect all the parameters of the __init__ method and capture them in a dict
                 # Then resolve the values of the dict using the context.
                 # Then call the __init__ method with the resolved values.
-                signature = inspect.signature(self.target.__init__)
+                # signature = inspect.signature(self.target.__init__)
 
                 # If it is a class, we need to wrap the __init__ method.
                 # We monkeypatch the __init__ method to add the context manager as a parameter.
                 @functools.wraps(self.target.__init__)
                 def wrapped_init(self, *args, **kwargs):
-
                     self.__init__(*args, **kwargs)
+                    "TODO"
 
                 self.target.__init__ = wrapped_init
             elif callable(self.target):

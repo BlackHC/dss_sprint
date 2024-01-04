@@ -47,8 +47,12 @@ def test_wandb_log_path():
     ):
         wandb.init(project="dummy_project", mode="online")
 
+        assert xpath.path_separator == "/"
+
         # Test wandb_custom_step
         with wandb_custom_step("test_step"):
+            wandb.define_metric.assert_called_with("test_step/*", "test_step/step")
+
             assert xpath.current_step_name == "test_step"
             assert xpath.current_step_index == 0
             wandb.log.assert_called_with({"test_step/step": 0}, commit=False)
@@ -68,7 +72,9 @@ def test_wandb_log_path():
 
             # Test define_metric
             define_metric("test_metric3")
-            wandb.define_metric.assert_called_once_with("test_step/test_metric3")
+            wandb.define_metric.assert_called_with("test_step/test_metric3")
+            # Verify that except for the two calls there were no others
+            assert wandb.define_metric.call_count == 2
 
         wandb.log.assert_called_with({}, commit=True)
 

@@ -1,6 +1,7 @@
 import re
 import typing
 from typing import Any
+
 import prettyprinter
 
 
@@ -201,7 +202,7 @@ def keys(obj: Any) -> list[str]:
     elif isinstance(obj, dict):
         return list(obj.keys())
     elif isinstance(obj, (list, tuple)):
-        return list(range(len(obj)))
+        return list(map(str, range(len(obj))))
     else:
         raise TypeError(f"Cannot get keys of type {type(obj)}")
 
