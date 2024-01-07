@@ -60,9 +60,9 @@ def __init_config_class(self, /, **kwargs):
 
 # Custom __iter__ to allow for unpacking.
 def __iter_config_class(self):
-    """Iterate over the fields of the config class.
+    """Iterate over the fields (their values) of the config class.
 
-    The fields are returned in the order they are defined in the class.
+    The field values are returned in the order they are defined in the class.
 
     Args:
         self:
@@ -136,11 +136,16 @@ def __invoke_config_class(self, func):
     # Get the fields of the config class.
     kwargs = {**self}
     # Filter the fields of the config class using the parameters of the callable.
-    kwargs = {
-        key: kwargs[key]
-        for key in parameters
-        if key in kwargs and parameters[key].kind != inspect.Parameter.VAR_KEYWORD
-    }
+    # (If there are variadic keyword arguments, then do not filter.)
+    if all(
+        parameter.kind != inspect.Parameter.VAR_KEYWORD
+        for parameter in parameters.values()
+    ):
+        kwargs = {
+            key: kwargs[key]
+            for key in parameters
+            if key in kwargs and parameters[key].kind != inspect.Parameter.VAR_KEYWORD
+        }
     # Invoke the callable with the filtered fields.
     return func(**kwargs)
 

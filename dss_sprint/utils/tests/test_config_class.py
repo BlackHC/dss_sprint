@@ -89,3 +89,18 @@ def test_config_class_invoke():
     config = TestConfigClass(a=1, b="2", c=3.0)
     result = config.invoke(func)
     assert result == (1, "2", 3.0)
+
+
+def test_config_class_invoke_kwargs():
+    @configclass
+    class TestConfigClass:
+        a: int
+        b: str
+        c: float
+
+    def func(**kwargs):
+        return kwargs["a"], kwargs["b"], kwargs["c"]
+
+    config = TestConfigClass(a=1, b="2", c=3.0)
+    result = config.invoke(func)
+    assert result == (1, "2", 3.0)
