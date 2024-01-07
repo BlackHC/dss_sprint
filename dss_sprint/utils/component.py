@@ -6,9 +6,8 @@ Component class to make it easy to create component based classes.
 import typing
 from dataclasses import dataclass
 
-import typing_extensions
-
-T = typing.TypeVar("T", bound="Component")
+T = typing.TypeVar("T", bound=typing.Protocol)
+C = typing.TypeVar("C", bound="Component")
 
 
 def explicit_try_cast(cls: typing.Type[T], instance) -> T | None:
@@ -31,12 +30,18 @@ def explicit_cast(cls: typing.Type[T], instance) -> T:
     """
     view = explicit_try_cast(cls, instance)
     if view is None:
-        raise TypeError(f"Cannot cast {instance} as {cls}")
+        raise TypeError(f"Cannot cast {type(instance)} to {cls} for:\n{instance}")
     return view
 
 
-@typing_extensions.runtime_checkable
+@typing.runtime_checkable
 class Interface(typing.Protocol):
+    """
+    Interface for a component.
+
+    This is a protocol that can be used to check if a class implements an interface and to cast to an interface.
+    """
+
     @classmethod
     def try_cast(cls: typing.Type[T], instance) -> T | None:
         """Try to cast an instance to the class.
@@ -54,7 +59,7 @@ class Interface(typing.Protocol):
         return explicit_cast(cls, instance)
 
 
-@typing_extensions.runtime_checkable
+@typing.runtime_checkable
 class Component(Interface, typing.Protocol):
     """
     Default component implementation.
@@ -71,7 +76,7 @@ class Component(Interface, typing.Protocol):
 
 
 @dataclass
-class ComponentView(Component, typing.Generic[T]):
+class ComponentView(Component, typing.Generic[C]):
     """
     Adapter for an interface.
 
@@ -99,7 +104,7 @@ class ComponentView(Component, typing.Generic[T]):
     ...             return self._component.b()
     """
 
-    _component: T
+    _component: C
 
     def query_protocol(self, cls: typing.Type[T]) -> T | None:
         """Query the protocol for a component.
@@ -123,6 +128,6 @@ class ProtocolWrapper(Component, typing.Generic[T]):
     instance: T
 
     def query_protocol(self, cls: typing.Type[T]) -> T | None:
-        if cls is self.protocol_type:
+        if issubclass(cls, self.protocol_type):
             return self.instance
-        return None
+        return super().query_protocol(cls)
