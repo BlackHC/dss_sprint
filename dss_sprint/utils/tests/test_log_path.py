@@ -5,8 +5,16 @@ import pytest
 from dss_sprint.utils.log_path import xpath
 
 
-def test_xpath_no_step():
+@pytest.fixture(autouse=True)
+def reset_xpath_state():
+    # Reset the state of xpath to its initial state
+    # This could be resetting variables or re-instantiating the object
     xpath.test_reset()
+
+    yield  # This allows the test to run. After the test, any cleanup can occur if needed.
+
+
+def test_xpath_no_step():
     assert xpath.metric_name("metric") == "metric"
 
     # Check all metrics and paths
@@ -15,7 +23,6 @@ def test_xpath_no_step():
 
 
 def test_xpath():
-    xpath.test_reset()
     with xpath.step("outer"):
         with xpath.step("inner"):
             assert xpath.metric_name("metric") == "outer/inner/metric"
@@ -30,7 +37,6 @@ def test_xpath():
 
 
 def test_xpath_array():
-    xpath.test_reset()
     with xpath.step("inner"):
         assert xpath.metric_name("metric", is_summary=True) == "inner[0]/metric"
     with xpath.step("inner"):
@@ -38,7 +44,6 @@ def test_xpath_array():
 
 
 def test_xpath_missing_array():
-    xpath.test_reset()
     # Checks that a warning is logged if the same sub_name is used twice without as_array=True
     with pytest.warns(UserWarning):
         with xpath.step("inner", is_summary_step=True):
@@ -51,7 +56,6 @@ def test_xpath_missing_array():
 
 
 def test_xpath_current_step_name():
-    xpath.test_reset()
     with xpath.step("outer"):
         assert xpath.current_step_name == "outer"
         with xpath.step("inner"):
@@ -66,7 +70,6 @@ def test_xpath_current_step_name():
 
 
 def test_xpath_current_unique_path():
-    xpath.test_reset()
     with xpath.step("outer"):
         assert xpath.current_unique_path == "outer[0]"
         with xpath.step("inner"):
@@ -78,7 +81,6 @@ def test_xpath_current_unique_path():
 
 
 def test_xpath_all_paths_stats():
-    xpath.test_reset()
     with xpath.step("outer"):
         with xpath.step("inner"):
             with xpath.step("inner2"):
@@ -129,7 +131,6 @@ def test_xpath_all_paths_stats():
 
 
 def test_xpath_summary_step():
-    xpath.test_reset()
     with xpath.step("outer", is_summary_step=True):
         with xpath.step("inner"):
             assert xpath.current_step_name == "outer/inner"

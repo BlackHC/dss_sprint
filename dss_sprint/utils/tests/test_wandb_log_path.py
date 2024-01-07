@@ -13,6 +13,15 @@ from dss_sprint.utils.wandb_log_path import (
 )
 
 
+@pytest.fixture(autouse=True)
+def reset_xpath_state():
+    # Reset the state of xpath to its initial state
+    # This could be resetting variables or re-instantiating the object
+    xpath.test_reset()
+
+    yield  # This allows the test to run. After the test, any cleanup can occur if needed.
+
+
 @pytest.mark.integration
 def test_integration_wandb_log_path():
     run = wandb.init(project="dummy_project", mode="online")
@@ -45,7 +54,7 @@ def test_wandb_log_path():
         patch("wandb.finish"),
         patch("wandb.init"),
     ):
-        wandb.init(project="dummy_project", mode="online")
+        wandb.init(project="dummy_project", mode="offline")
 
         assert xpath.path_separator == "/"
 
