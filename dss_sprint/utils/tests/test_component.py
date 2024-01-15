@@ -66,8 +66,8 @@ class ImplementationB(InterfaceB, Component):
     def b(self):
         return self.field
 
-    def query_protocol(self, cls: typing.Type[T]) -> T:
-        if issubclass(InterfaceA, cls):
+    def query_protocol(self, cls: typing.Type[T]) -> T | None:
+        if issubclass(ImplementationB_ViewA, cls):
             return ImplementationB_ViewA(self)
         return super().query_protocol(cls)
 

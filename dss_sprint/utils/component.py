@@ -6,32 +6,8 @@ Component class to make it easy to create component based classes.
 import typing
 from dataclasses import dataclass
 
-T = typing.TypeVar("T", bound=typing.Protocol)
+T = typing.TypeVar("T")
 C = typing.TypeVar("C", bound="Component")
-
-
-def explicit_try_cast(cls: typing.Type[T], instance) -> T | None:
-    """Try to cast an instance to a protocol.
-
-    If the instance implements the protocol, return the instance. Otherwise, return None.
-    """
-    if isinstance(instance, cls):
-        return instance
-    elif isinstance(instance, Component):
-        return instance.query_protocol(cls)
-    else:
-        return None
-
-
-def explicit_cast(cls: typing.Type[T], instance) -> T:
-    """Cast an instance to a protocol.
-
-    If the instance implements the protocol, return the instance. Otherwise, raise a TypeError.
-    """
-    view = explicit_try_cast(cls, instance)
-    if view is None:
-        raise TypeError(f"Cannot cast {type(instance)} to {cls} for:\n{instance}")
-    return view
 
 
 @typing.runtime_checkable
@@ -41,6 +17,29 @@ class Interface(typing.Protocol):
 
     This is a protocol that can be used to check if a class implements an interface and to cast to an interface.
     """
+    @staticmethod
+    def explicit_try_cast(explicit_cls: typing.Type[T], instance) -> T | None:
+        """Try to cast an instance to a protocol.
+
+        If the instance implements the protocol, return the instance. Otherwise, return None.
+        """
+        if isinstance(instance, explicit_cls):
+            return instance
+        elif isinstance(instance, Component):
+            return instance.query_protocol(explicit_cls)
+        else:
+            return None
+
+    @staticmethod
+    def explicit_cast(explicit_cls: typing.Type[T], instance) -> T:
+        """Cast an instance to a protocol.
+
+        If the instance implements the protocol, return the instance. Otherwise, raise a TypeError.
+        """
+        view = Interface.explicit_try_cast(explicit_cls, instance)
+        if view is None:
+            raise TypeError(f"Cannot cast {type(instance)} to {explicit_cls} for:\n{instance}")
+        return view
 
     @classmethod
     def try_cast(cls: typing.Type[T], instance) -> T | None:
@@ -48,7 +47,7 @@ class Interface(typing.Protocol):
 
         If the instance implements the class, return the instance. Otherwise, return None.
         """
-        return explicit_try_cast(cls, instance)
+        return Interface.explicit_try_cast(cls, instance)
 
     @classmethod
     def cast(cls: typing.Type[T], instance) -> T:
@@ -56,7 +55,7 @@ class Interface(typing.Protocol):
 
         If the instance implements the class, return the instance. Otherwise, raise a TypeError.
         """
-        return explicit_cast(cls, instance)
+        return Interface.explicit_cast(cls, instance)
 
 
 @typing.runtime_checkable

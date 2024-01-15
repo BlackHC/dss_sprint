@@ -4,9 +4,10 @@ Model protocols.
 import typing
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 # TODO
-Data: typing.TypeAlias = tuple[np.typing.ArrayLike, np.typing.ArrayLike] | np.ndarray
+Data: typing.TypeAlias = tuple[ArrayLike, ArrayLike] | np.ndarray
 
 
 class TrainableModelProtocol(typing.Protocol):

@@ -4,7 +4,7 @@ import typing
 import numpy as np
 import skorch
 import torch
-from numpy._typing import ArrayLike
+from numpy.typing import ArrayLike
 from skorch.utils import to_numpy
 
 from dss_sprint.sklearn_like_protocols import (
@@ -16,9 +16,15 @@ from dss_sprint.sklearn_like_protocols import (
 from dss_sprint.utils.component import Component, T
 
 
+class EnsembleOutput(typing.NamedTuple):
+    """The output of an ensemble model."""
+    model_predictions: ArrayLike
+    ensemble_predictions: ArrayLike
+
+
 class SklearnMeanEnsembleModule(torch.nn.Module):
     """
-    A torch.nn.Module that wraps a model and outputs both the mean and the individual predictions.
+    A torch.nn.Module that wraps an ensemble model and outputs both the mean and the individual predictions.
     """
 
     def __init__(self, model: torch.nn.Module):
@@ -28,7 +34,7 @@ class SklearnMeanEnsembleModule(torch.nn.Module):
     def forward(self, x, *args, **kwargs):
         y_e_ = self.model(x, *args, **kwargs)
         prediction_ = torch.mean(y_e_, dim=0)
-        return prediction_, y_e_
+        return EnsembleOutput(prediction_, y_e_)
 
 
 class SklearnLogSumExpEnsembleModule(torch.nn.Module):
@@ -43,7 +49,7 @@ class SklearnLogSumExpEnsembleModule(torch.nn.Module):
     def forward(self, x, *args, **kwargs):
         y_e_ = self.model(x, *args, **kwargs)
         prediction_ = torch.logsumexp(y_e_, dim=0)
-        return prediction_, y_e_
+        return EnsembleOutput(prediction_, y_e_)
 
 
 class SklearnClassifierEnsemble(SklearnLikeEnsembleClassifierProtocol, Component):
@@ -54,8 +60,8 @@ class SklearnClassifierEnsemble(SklearnLikeEnsembleClassifierProtocol, Component
             model
         )
 
-    def query_protocol(self, cls: typing.Type[T]) -> T:
-        if cls is SklearnLikeEnsembleRegressorProtocol:
+    def query_protocol(self, cls: typing.Type[T]) -> T | None:
+        if isinstance(self, cls):
             return self
         elif isinstance(self.model, cls):
             return self.model
@@ -120,10 +126,14 @@ class SkorchRegressorEnsemble(
         nonlin = self._get_predict_nonlinearity()
         ys = []
         for y_batch in self.forward_iter(X, training=False):
-            y_batch = y_batch[1]
+            assert isinstance(y_batch, EnsembleOutput)
+            y_batch = y_batch.ensemble_predictions
             y_batch = nonlin(y_batch)
             ys.append(to_numpy(y_batch))
-        ys = np.concatenate(ys, 1)
+        if len(ys) >= 1:
+            ys = np.concatenate(ys, 1)
+        else:
+            ys = np.array(ys)
         return ys
 
     @functools.wraps(skorch.NeuralNetRegressor.get_loss)

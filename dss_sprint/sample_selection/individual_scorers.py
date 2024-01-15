@@ -130,6 +130,8 @@ class IndividualAcquisitionFunction(SampleSelector):
     ) -> list[int]:
         # iterate over the pool dataset
         # compute the acquisition function for each sample
+        if not len(pool_dataset):
+            return []
         scores = self.scorer(model, train_dataset, pool_dataset)
         selected_indices = self.selector(scores, acquisition_batch_size)
         return selected_indices

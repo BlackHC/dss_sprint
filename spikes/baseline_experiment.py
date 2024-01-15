@@ -1,4 +1,5 @@
 """A baseline active learning experiment to understand the components better."""
+#%%
 import blackhc.project.script
 import torch
 from siren_pytorch import SirenNet
@@ -83,7 +84,7 @@ model_sanity = NeuralNetRegressor(
     # callbacks=[LRScheduler(policy=StepLR, step_size=10, gamma=0.1)],
     # train_split=predefined_split(torch.utils.data.TensorDataset(torch.from_numpy(X_test), torch.from_numpy(y_test))),
     verbose=1,
-    device="mps",
+    device="cpu",
 )
 
 model_sanity.fit(X_train, y_train)
@@ -124,7 +125,7 @@ model_sanity = SkorchRegressorEnsemble(
     # callbacks=[LRScheduler(policy=StepLR, step_size=10, gamma=0.1)],
     # train_split=predefined_split(torch.utils.data.TensorDataset(torch.from_numpy(X_test), torch.from_numpy(y_test))),
     verbose=1,
-    device="mps",
+    device="cpu",
 )
 
 model_sanity.fit(X_train, y_train)
@@ -214,9 +215,13 @@ for i in tqdm(range(100 // 5)):
         5,
     )
 
-    base_indices = active_learning_indices.acquire(select_samples)
     log_metric("mse", mse)
-    log_metric("acquired_index", base_indices[0])
+
+    base_indices = active_learning_indices.acquire(select_samples)
+    if base_indices:
+        log_metric("acquired_index", base_indices[0])
     commit()
 
 wandb.finish()
+
+# %%
