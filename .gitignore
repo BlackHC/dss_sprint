@@ -103,6 +103,7 @@ ENV/
 
 # IDE settings
 .vscode/
+.idea/
 
 # mkdocs build dir
 site/
@@ -111,5 +112,10 @@ site/
 .history/
 
 # Idea/PyCharm/etc
-/.idea/
 wandb/
+
+**/__pycache__
+**/.ipynb_checkpoints
+*.egg-info/
+
+.pymon

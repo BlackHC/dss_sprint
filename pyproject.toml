@@ -125,3 +125,22 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
 ]
+
+
+[tool.ruff]
+extend-include = ["*.ipynb"]
+fixable = ["I001", "F401"]
+ignore = ["E402", "E721", "E731", "E741", "F722"]
+ignore-init-module-imports = true
+select = ["E", "F", "I001"]
+src = []
+
+[tool.ruff.isort]
+combine-as-imports = true
+extra-standard-library = ["typing_extensions"]
+lines-after-imports = 2
+order-by-type = false
+
+# [tool.pyright]
+# reportIncompatibleMethodOverride = true
+# reportIncompatibleVariableOverride = false  # Incompatible with eqx.AbstractVar
